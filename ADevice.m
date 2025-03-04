@@ -1,5 +1,5 @@
-% Date: 2025.02.27
-% Version: 0.0
+% Date: 2025.03.04
+% Version: 1.0
 % Author: Aleksandr Vakulenko
 % Licensed after GNU GPL v3
 %

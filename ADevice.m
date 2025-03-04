@@ -1,34 +1,41 @@
 % Date: 2025.02.27
 % Version: 0.0
 % Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
 %
 % ----INFO----:
-% ADevice (handle) is an abstract class  for wraping any automation
-% and measurement devices.
+% aDevice (handle) is an abstract class for wraping any automation
+% and measurement device.
 % 
-% Real devices is maintaned by inherited subclasses.
+% Real devices are maintaned by inherited subclasses.
 % 
-% 1) Any subclass builds itself by obj@ADevice constructor.
-% 
-% 
+% 1) Any subclass builds itself by obj@aDevice constructor with
+% any type of connector.
+% ------------
 
-classdef ADevice < handle
+% TODO:
+% 1) add log control
+% 2) add log to file
+
+
+classdef aDevice < handle
     methods (Access = public)
-        function obj = ADevice(connector)
+        function obj = aDevice(connector)
             arguments
-                connector Connector = Connector_empty;
+                connector Connector;
             end
             obj.con = connector;
-            disp("ADevice C-tor") % FIXME: debug
-        end
-
-        function delete(obj)
-            disp("ADevice D-tor") % FIXME: debug
         end
     end
     
+    methods (Access = protected)
+        function DEBUG_CMD_LOG(obj, CMD)
+            DEV = string(class(obj));
+            MSG = "CMD > " + DEV + ": " + CMD;
+            DEBUG_MSG(MSG, "orange");
+        end
+    end
     
-
     properties (Access = protected)
         con Connector = Connector_empty;
     end

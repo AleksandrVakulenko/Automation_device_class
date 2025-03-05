@@ -34,6 +34,11 @@ classdef aDevice < handle
             MSG = "CMD > " + DEV + ": " + CMD;
             DEBUG_MSG(MSG, "orange");
         end
+        function DEBUG_RESP_LOG(obj, RESP)
+            DEV = string(class(obj));
+            MSG = "RESP > " + DEV + ": " + RESP;
+            DEBUG_MSG(MSG, "orange");
+        end
     end
     
     properties (Access = protected)

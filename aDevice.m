@@ -31,12 +31,12 @@ classdef aDevice < handle
     methods (Access = protected)
         function DEBUG_CMD_LOG(obj, CMD)
             DEV = string(class(obj));
-            MSG = "CMD > " + DEV + ": " + CMD;
+            MSG = "CMD from <" + DEV + ">: """ + CMD + """";
             DEBUG_MSG(MSG, "orange");
         end
         function DEBUG_RESP_LOG(obj, RESP)
             DEV = string(class(obj));
-            MSG = "RESP > " + DEV + ": " + RESP;
+            MSG = "RESP to <" + DEV + ">: """ + RESP + """";
             DEBUG_MSG(MSG, "orange");
         end
     end

@@ -1,5 +1,44 @@
 
 
+% TODO:
+%  1) SOFF p108
+%  2) RSRC p109
+%  3) REFZ 
+
+%  4) IVMD p111
+%  5) ISRC
+%  6) ICPL (???)
+%  7) IGND
+%  8) IRNG (!!!)
+%  9) ICUR (!!!)
+% 10) ILVL p112
+
+% 11) OFLT p113
+% 12) OFSL
+% 13) SYNC
+% 14) ADVFILT
+
+% 15) CEXP
+
+% 16) COFA
+% 17) COFP
+
+% 18) OAUX (!)
+% 19) AUXV (!)
+
+% 20) OUTP? (!!!!) 
+% 21) SNAP? (!!!)
+
+
+% 22) Data Streaming Commands ? p140
+
+% System Commands:
+% 23) 
+% 24) 
+% 25) 
+
+
+
 classdef SR860_dev < aDevice
 
     methods (Access = public)
@@ -12,9 +51,9 @@ classdef SR860_dev < aDevice
         end
     end
 
-    %------------ CMD public block -----------
-    methods (Access = public)
 
+    %------------ SET CMD public block -----------
+    methods (Access = public) % SET FUNCTIONS
         function varargout = set_genVF(obj, amp_V, freq_Hz)
             arguments
                 obj
@@ -34,11 +73,6 @@ classdef SR860_dev < aDevice
             end
         end
 
-        function [amp_V, freq_Hz] = get_genVF(obj)
-            amp_V = obj.get_gen_amp();
-            freq_Hz = obj.get_gen_freq();
-        end
-
         function set_sensitivity(obj, Level, mode)
             arguments
                 obj
@@ -47,14 +81,75 @@ classdef SR860_dev < aDevice
             end
             [~, ind] = find_best_sensitivity(Level, mode);
             CMD = sprintf("SCAL %d", ind);
-            obj.DEBUG_CMD_LOG(CMD);
-            obj.con.send(CMD);
+            obj.send_and_log(CMD);
+        end
+    
+        function set_detector_phase(obj, phase_deg)
+            arguments
+                obj
+                phase_deg (1, 1) double {mustBeNumeric(phase_deg), ...
+                    mustBeInRange(phase_deg, -360e3, 360e3, "inclusive")}
+            end
+                CMD = sprintf("PHAS %0.7d DEG", phase_deg);
+                obj.send_and_log(CMD);
+        end
+
+        function set_harm_num(obj, harm_n)
+            arguments
+                obj
+                harm_n (1,1) {mustBeNumeric(harm_n), ...
+                    mustBeInRange(harm_n, 1, 99, "inclusive")}
+            end
+            if  harm_n ~= round(harm_n)
+                harm_n = round(harm_n);
+                warning(['Harmonic number rounded to ' num2str(harm_n)]);
+            end
+            CMD = sprintf("HARM %d", harm_n);
+            obj.send_and_log(CMD);
+        end
+
+    end
+
+
+    %------------ GET CMD public block -----------
+    methods (Access = public) % GET FUNCTIONS
+        function resp = get_IDN(obj)
+            resp = obj.query_and_log("*IDN?");
+        end
+        
+        function RESET(obj)
+            obj.send_and_log("*RST");
+        end
+
+        function [amp_V, freq_Hz] = get_genVF(obj)
+            amp_V = obj.get_gen_amp();
+            freq_Hz = obj.get_gen_freq();
+        end
+    
+        function phase_deg = get_detector_phase(obj)
+            CMD = "PHAS?";
+            resp = obj.query_and_log(CMD);
+            phase_deg = str2double(resp);
+            phase_deg = adev_utils.round_to_digit(phase_deg, 6);
+        end
+   
+        function freq_Hz = get_detector_freq(obj)
+            CMD = "FREQ?";
+            resp = obj.query_and_log(CMD);
+            freq_Hz = str2double(resp);
+            freq_Hz = adev_utils.round_to_digit(freq_Hz, 4);
+        end
+   
+        function harm_num = get_harm_num(obj)
+            CMD = "HARM?";
+            resp = obj.query_and_log(CMD);
+            harm_num = str2double(resp);
         end
     end
 
-    %----------- CMD PRIVATE block -----------
-    methods (Access = public)
 
+    %----------- CMD PRIVATE block -----------
+    methods (Access = private) % FIXME: make private (done)
         function varargout = set_gen_freq(obj, freq_Hz)
             arguments
                 obj
@@ -62,8 +157,7 @@ classdef SR860_dev < aDevice
                     mustBeInRange(freq_Hz, 0.001, 500e3, "inclusive")}
             end
             CMD = sprintf("FREQINT %f HZ", freq_Hz);
-            obj.DEBUG_CMD_LOG(CMD)
-            obj.con.send(CMD);
+            obj.send_and_log(CMD);
             if nargout > 0
                 freq = obj.get_gen_freq();
                 varargout = set_argout(nargout, freq);
@@ -77,8 +171,7 @@ classdef SR860_dev < aDevice
                     mustBeInRange(amp_V, 1e-9, 2, "inclusive")}
             end
             CMD = sprintf("SLVL %0.3f V", amp_V);
-            obj.DEBUG_CMD_LOG(CMD)
-            obj.con.send(CMD);
+            obj.send_and_log(CMD);
             if nargout > 0
                 amp = obj.get_gen_amp();
                 varargout = set_argout(nargout, amp);
@@ -87,21 +180,43 @@ classdef SR860_dev < aDevice
 
         function freq_Hz = get_gen_freq(obj)
             CMD = "FREQINT?";
-            obj.DEBUG_CMD_LOG(CMD)
-            resp = obj.con.query(CMD, "fast");
-            obj.DEBUG_RESP_LOG(resp);
+            resp = obj.query_and_log(CMD);
             freq_Hz = str2double(resp);
-
+            freq_Hz = adev_utils.round_to_digit(freq_Hz, 4);
         end
 
         function amp_V = get_gen_amp(obj)
             CMD = "SLVL?";
-            obj.DEBUG_CMD_LOG(CMD)
-            resp = obj.con.query(CMD, "fast");
-            obj.DEBUG_RESP_LOG(resp);
+            resp = obj.query_and_log(CMD);
             amp_V = str2double(resp);
+            amp_V = adev_utils.round_to_digit(amp_V, 8);
         end
 
+    end
+    %-----------------------------------------
+
+
+
+    methods (Access = private) % log wrapper for send/query
+        function send_and_log(obj, CMD)
+            arguments
+                obj
+                CMD (1,1) string {mustBeNonempty(CMD)}
+            end
+            obj.DEBUG_CMD_LOG(CMD);
+            obj.con.send(CMD);
+        end
+
+        function resp = query_and_log(obj, CMD)
+            arguments
+                obj
+                CMD (1,1) string {mustBeNonempty(CMD)}
+            end
+            obj.DEBUG_CMD_LOG(CMD);
+            %FIXME: speed settings!
+            resp = obj.con.query(CMD, "fast");
+            obj.DEBUG_RESP_LOG(resp);
+        end
     end
 
 

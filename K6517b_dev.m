@@ -1,9 +1,8 @@
 
 
 % TODO:
-%  1) place IDC, RST to superclass
-%  2) 
-%  3) 
+%  1) 
+
 
 
 
@@ -88,40 +87,6 @@ classdef K6517b_dev < aDevice
 
 
     end
-
-
-    %----------- CMD PRIVATE block -----------
-    methods (Access = private) % FIXME: make private (done)
-
-
-
-    end
-    %-----------------------------------------
-
-
-
-    methods (Access = private) % log wrapper for send/query
-        function send_and_log(obj, CMD)
-            arguments
-                obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
-            end
-            obj.DEBUG_CMD_LOG(CMD);
-            obj.con.send(CMD);
-        end
-
-        function resp = query_and_log(obj, CMD)
-            arguments
-                obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
-            end
-            obj.DEBUG_CMD_LOG(CMD);
-            %FIXME: speed settings!
-            resp = obj.con.query(CMD, "fast");
-            obj.DEBUG_RESP_LOG(resp);
-        end
-    end
-
 
 
 end

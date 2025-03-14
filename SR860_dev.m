@@ -1,17 +1,9 @@
 
 
 % TODO:
-%  1) SOFF p108
+
 %  2) RSRC p109
 %  3) REFZ 
-
-%  4) IVMD p111
-%  5) ISRC
-%  6) ICPL (???)
-%  7) IGND
-%  8) IRNG (!!!)
-%  9) ICUR (!!!)
-% 10) ILVL p112
 
 % 11) OFLT p113
 % 12) OFSL
@@ -105,6 +97,62 @@ classdef SR860_dev < aDevice
             obj.send_and_log(CMD);
         end
 
+
+        function set_current_input_range(obj, curr_range)
+            arguments
+                obj
+                curr_range {mustBeMember(curr_range, "1u", "10n")}
+            end
+            switch curr_range
+                case "1u"
+                    Text = "1MEG";
+                case "10n"
+                    Text = "100MEG";
+                otherwise
+                    error('placeholder') % FIXME
+            end
+            CMD = spritntf("ICUR %s", Text);
+            obj.send_and_log(CMD);
+        end
+
+        function set_voltage_input_range(obj, volt_range)
+            arguments
+                obj
+                volt_range {mustBeMember(volt_range,...
+                    [1, 0.3, 0.1, 0.03, 0.010])} = 1;
+            end
+            switch volt_range
+                case 1.000
+                    Text = "1V";
+                case 0.300
+                    Text = "300M";
+                case 0.100
+                    Text = "100M";
+                case 0.030
+                    Text = "30M";
+                case 0.010
+                    Text = "10M";
+                otherwise
+                    error('placeholder') % FIXME
+            end
+            CMD = spritntf("IRANG %s", Text);
+            obj.send_and_log(CMD);
+        end
+        
+        function configure_input(obj, input_mode)
+            arguments
+                obj
+                input_mode {mustBeMember(input_mode, ["VOLT", "CURR"])};
+
+            end
+            CMD_1 = sprintf("IVMD %s", input_mode);
+            CMD_2 = "ISRC A"; % NOTE:  always A(V) (not A-B)
+            CMD_3 =  "ICPL DC"; % NOTE:  always DC(V) mode
+            CMD_4 = "IGND GROund";  % NOTE:  always ground mode
+            CMD = CMD_1 +";" + CMD_2 +";" + CMD_3 +";" + CMD_4;
+            obj.send_and_log(CMD);
+        end
+
     end
 
 
@@ -141,6 +189,13 @@ classdef SR860_dev < aDevice
             CMD = "HARM?";
             resp = obj.query_and_log(CMD);
             harm_num = str2double(resp);
+        end
+   
+
+        function value = get_signal_strength(obj)
+            CMD = "ILVL?";
+            resp = obj.query_and_log(CMD);
+            value = str2double(resp);
         end
     end
 
@@ -191,32 +246,6 @@ classdef SR860_dev < aDevice
 
     end
     %-----------------------------------------
-
-
-
-    methods (Access = private) % log wrapper for send/query
-        function send_and_log(obj, CMD)
-            arguments
-                obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
-            end
-            obj.DEBUG_CMD_LOG(CMD);
-            obj.con.send(CMD);
-        end
-
-        function resp = query_and_log(obj, CMD)
-            arguments
-                obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
-            end
-            obj.DEBUG_CMD_LOG(CMD);
-            %FIXME: speed settings!
-            resp = obj.con.query(CMD, "fast");
-            obj.DEBUG_RESP_LOG(resp);
-        end
-    end
-
-
 
 end
 

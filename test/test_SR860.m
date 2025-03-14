@@ -46,7 +46,12 @@ assert(harm_n_send == harm_n_rec, "rec harm num != send harm num");
 SR860.set_harm_num(1);
 
 
-
+% FIXME:
+% 1) TEST configure_input
+% 2) TEST set_current_input_range
+% 3) TEST set_voltage_input_range
+% 4) TEST get_signal_strength
+% 5) 
 
 
 delete(SR860)

@@ -2,9 +2,6 @@
 
 % TODO:
 
-%  2) RSRC p109
-%  3) REFZ 
-
 % 11) OFLT p113
 % 12) OFSL
 % 13) SYNC
@@ -18,7 +15,7 @@
 % 18) OAUX (!)
 % 19) AUXV (!)
 
-% 20) OUTP? (!!!!) 
+% 20) OUTP? (!!!!)
 % 21) SNAP? (!!!)
 
 
@@ -43,23 +40,23 @@ classdef SR860_dev < aDevice
 
     %------------ SET CMD public block -----------
     methods (Access = public) % SET FUNCTIONS
-        function varargout = set_genVF(obj, amp_V, freq_Hz)
+        function RESET(obj)
+            obj.send_and_log("*RST");
+        end
+
+        function set_gen_config(obj, amp_V, freq_Hz, offset)
             arguments
                 obj
                 amp_V (1, 1) double {mustBeNumeric(amp_V), ...
                     mustBeInRange(amp_V, 1e-9, 2, "inclusive")}
                 freq_Hz (1, 1) double {mustBeNumeric(freq_Hz), ...
                     mustBeInRange(freq_Hz, 0.001, 500e3, "inclusive")}
+                offset (1, 1) double {mustBeNumeric(offset), ...
+                    mustBeInRange(offset, -5, 5, "inclusive")} = 0
             end
-
-            if nargout == 0
-                obj.set_gen_freq(freq_Hz);
-                obj.set_gen_amp(amp_V);
-            else
-                amp = obj.set_gen_amp(amp_V);
-                freq = obj.set_gen_freq(freq_Hz);
-                varargout = set_argout(nargout, amp, freq);
-            end
+            obj.set_gen_freq(freq_Hz);
+            obj.set_gen_amp(amp_V);
+            obj.set_gen_offset(offset);
         end
 
         function set_sensitivity(obj, Level, mode)
@@ -72,15 +69,15 @@ classdef SR860_dev < aDevice
             CMD = sprintf("SCAL %d", ind);
             obj.send_and_log(CMD);
         end
-    
+
         function set_detector_phase(obj, phase_deg)
             arguments
                 obj
                 phase_deg (1, 1) double {mustBeNumeric(phase_deg), ...
                     mustBeInRange(phase_deg, -360e3, 360e3, "inclusive")}
             end
-                CMD = sprintf("PHAS %0.7d DEG", phase_deg);
-                obj.send_and_log(CMD);
+            CMD = sprintf("PHAS %0.7d DEG", phase_deg);
+            obj.send_and_log(CMD);
         end
 
         function set_harm_num(obj, harm_n)
@@ -96,7 +93,6 @@ classdef SR860_dev < aDevice
             CMD = sprintf("HARM %d", harm_n);
             obj.send_and_log(CMD);
         end
-
 
         function set_current_input_range(obj, curr_range)
             arguments
@@ -138,7 +134,7 @@ classdef SR860_dev < aDevice
             CMD = spritntf("IRANG %s", Text);
             obj.send_and_log(CMD);
         end
-        
+
         function configure_input(obj, input_mode)
             arguments
                 obj
@@ -153,6 +149,25 @@ classdef SR860_dev < aDevice
             obj.send_and_log(CMD);
         end
 
+        function set_sync_src(obj, src)
+            arguments
+                obj
+                src {mustBeMember(src, ["INT", "EXT"])}
+            end
+            CMD = spritnf("RSRC %s", src);
+            obj.send_and_log(CMD);
+        end
+
+        function set_ref_input_impedance(obj, R)
+            arguments
+                obj
+                R {mustBeMember(R, ["50ohms", "1Meg"])}
+            end
+                CMD = sprintf("REFZ %s", R);
+                obj.send_and_log(CMD);
+        end
+    
+    
     end
 
 
@@ -161,36 +176,31 @@ classdef SR860_dev < aDevice
         function resp = get_IDN(obj)
             resp = obj.query_and_log("*IDN?");
         end
-        
-        function RESET(obj)
-            obj.send_and_log("*RST");
-        end
 
         function [amp_V, freq_Hz] = get_genVF(obj)
             amp_V = obj.get_gen_amp();
             freq_Hz = obj.get_gen_freq();
         end
-    
+
         function phase_deg = get_detector_phase(obj)
             CMD = "PHAS?";
             resp = obj.query_and_log(CMD);
             phase_deg = str2double(resp);
             phase_deg = adev_utils.round_to_digit(phase_deg, 6);
         end
-   
+
         function freq_Hz = get_detector_freq(obj)
             CMD = "FREQ?";
             resp = obj.query_and_log(CMD);
             freq_Hz = str2double(resp);
             freq_Hz = adev_utils.round_to_digit(freq_Hz, 4);
         end
-   
+
         function harm_num = get_harm_num(obj)
             CMD = "HARM?";
             resp = obj.query_and_log(CMD);
             harm_num = str2double(resp);
         end
-   
 
         function value = get_signal_strength(obj)
             CMD = "ILVL?";
@@ -202,7 +212,7 @@ classdef SR860_dev < aDevice
 
     %----------- CMD PRIVATE block -----------
     methods (Access = private) % FIXME: make private (done)
-        function varargout = set_gen_freq(obj, freq_Hz)
+        function set_gen_freq(obj, freq_Hz)
             arguments
                 obj
                 freq_Hz (1, 1) double {mustBeNumeric(freq_Hz), ...
@@ -210,13 +220,9 @@ classdef SR860_dev < aDevice
             end
             CMD = sprintf("FREQINT %f HZ", freq_Hz);
             obj.send_and_log(CMD);
-            if nargout > 0
-                freq = obj.get_gen_freq();
-                varargout = set_argout(nargout, freq);
-            end
         end
 
-        function varargout = set_gen_amp(obj, amp_V)
+        function set_gen_amp(obj, amp_V)
             arguments
                 obj
                 amp_V (1, 1) double {mustBeNumeric(amp_V), ...
@@ -224,10 +230,16 @@ classdef SR860_dev < aDevice
             end
             CMD = sprintf("SLVL %0.3f V", amp_V);
             obj.send_and_log(CMD);
-            if nargout > 0
-                amp = obj.get_gen_amp();
-                varargout = set_argout(nargout, amp);
+        end
+
+        function set_gen_offset(obj, offset)
+            arguments
+                obj
+                offset (1, 1) double {mustBeNumeric(offset), ...
+                    mustBeInRange(offset, -5, 5, "inclusive")}
             end
+            CMD = sprintf("SOFF %0.3f V", offset);
+            obj.send_and_log(CMD);
         end
 
         function freq_Hz = get_gen_freq(obj)
@@ -251,7 +263,7 @@ end
 
 
 
-
+% FIXME: delete unsued func
 function out = set_argout(n_out, varargin)
 n_in = nargin-1;
 if n_out > 0

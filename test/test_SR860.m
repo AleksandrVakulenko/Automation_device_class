@@ -16,7 +16,7 @@ disp(['IDN: ' resp])
 % set and read volt and freq
 v_send = 0.1;
 f_send = 1000;
-[v_rec, f_rec] = SR860.set_genVF(v_send, f_send);
+[v_rec, f_rec] = SR860.set_gen_config(v_send, f_send, 0);
 assert(v_send == v_rec, "rec gen voltage != send gen voltage");
 assert(f_send == f_rec, "rec gen freq != send gen freq");
 
@@ -51,7 +51,9 @@ SR860.set_harm_num(1);
 % 2) TEST set_current_input_range
 % 3) TEST set_voltage_input_range
 % 4) TEST get_signal_strength
-% 5) 
+% 5) TEST set_gen_offset
+% 6) TEST set_sync_src
+% 7) TEST set_ref_input_impedance
 
 
 delete(SR860)

@@ -16,6 +16,8 @@
 % TODO:
 % 1) add log control
 % 2) add log to file
+% 3) connection verification
+% 4) instrument find
 
 
 classdef aDevice < handle

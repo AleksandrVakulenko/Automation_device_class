@@ -43,6 +43,18 @@ classdef K6517b_dev < aDevice
             obj.send_and_log(CMD);
         end
 
+        function set_zero_check(obj, state)
+        arguments
+            obj
+            state (1,1) string {mustBeMember(state, ["enable", "disable"])}
+        end
+            if state == "enable"
+                CMD = ":SYSTem:ZCHeck ON";
+            else
+                CMD = ":SYSTem:ZCHeck OFF";
+            end
+            obj.send_and_log(CMD);
+        end
 
         function resp = read_last(obj)
 
@@ -52,6 +64,24 @@ classdef K6517b_dev < aDevice
         end
 
 
+        function set_sensitivity(obj, Level, mode)
+            arguments
+                obj
+                Level (1,1) double
+                mode {mustBeMember(mode, ["voltage", "current"])} = "current";
+            end
+            
+            if mode == "voltage"
+                func = "VOLTage";
+            else
+                func = "CURRent";
+            end
+
+            CMD = sprintf(":SENSe:%s:RANGe %d", func, Level);
+            % ":SENSe:%s:RANGe ?"
+            
+            obj.send_and_log(CMD);
+        end 
 
 
 %         function set_sensitivity(obj, Level, mode)

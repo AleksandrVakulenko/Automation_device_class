@@ -19,6 +19,17 @@ Ammeter = K6517b_dev(27);
 
 % Ammeter.read_last
 
+
+set_zero_check(obj, "enable");
+pause(1)
+set_zero_check(obj, "disable");
+pause(1)
+set_zero_check(obj, "enable");
+
+% FIXME!
+% set_sensitivity(obj, 0.1);
+
+
 delete(Ammeter)
 
 

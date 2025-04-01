@@ -1,10 +1,12 @@
 
 DEBUG_MSG_ENABLE("disable")
 
+
+
+
+%% AUTO TEST
+
 clc
-
-
-
 
 SR860 = SR860_dev(4);
 
@@ -45,18 +47,26 @@ harm_n_rec = SR860.get_harm_num();
 assert(harm_n_send == harm_n_rec, "rec harm num != send harm num");
 SR860.set_harm_num(1);
 
-
-% FIXME:
-% 1) TEST configure_input
-% 2) TEST set_current_input_range
-% 3) TEST set_voltage_input_range
-% 4) TEST get_signal_strength
-% 5) TEST set_gen_offset
-% 6) TEST set_sync_src
-% 7) TEST set_ref_input_impedance
-
-
 delete(SR860)
+
+%% MANUAL TEST
+
+% TEST list:
+%  1) configure_input
+%  2) set_current_input_range
+%  3) set_voltage_input_range
+%  4) get_signal_strength
+%  5) set_gen_offset
+%  6) set_sync_src
+%  7) set_ref_input_impedance
+%  8) set_expand
+%  9) [Xexp, Yexp, Rexp] = get_expand
+% 10) time_const = get_time_constant
+% 11) set_filter_slope
+% 12) 
+% 13) 
+
+
 
 
 

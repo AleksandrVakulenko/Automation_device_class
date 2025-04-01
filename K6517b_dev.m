@@ -17,7 +17,8 @@
 %  4) 
 %  5) find useful CMDs
 
-
+% set_zero_check
+% enable_feedback
 classdef K6517b_dev < aDevice
     methods (Access = public)
         function obj = K6517b_dev(GPIB_num)
@@ -40,7 +41,7 @@ classdef K6517b_dev < aDevice
         end
     end
 
-    
+
     %--------- DATA READ CMD public block --------
     methods (Access = public)
         function resp = read_last(obj)
@@ -52,7 +53,7 @@ classdef K6517b_dev < aDevice
 
 
     %------------ SET CMD public block -----------
-    methods (Access = public) % SET FUNCTIONS
+    methods (Access = public)
         function config(obj, mode)
             arguments
                 obj
@@ -71,15 +72,15 @@ classdef K6517b_dev < aDevice
             obj.send_and_log(CMD);
         end
 
-        function set_zero_check(obj, state)
+        function enable_feedback(obj, state)
         arguments
             obj
             state (1,1) string {mustBeMember(state, ["enable", "disable"])}
         end
             if state == "enable"
-                CMD = ":SYSTem:ZCHeck ON";
-            else
                 CMD = ":SYSTem:ZCHeck OFF";
+            else
+                CMD = ":SYSTem:ZCHeck ON";
             end
             obj.send_and_log(CMD);
         end
@@ -110,7 +111,7 @@ classdef K6517b_dev < aDevice
 
 
     %------------ GET CMD public block -----------
-    methods (Access = public) % GET FUNCTIONS
+    methods (Access = public)
 
 
     end

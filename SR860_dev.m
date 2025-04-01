@@ -12,22 +12,21 @@
 
 % TODO:
 
-% 11) OFLT p113
-% 12) OFSL
-% 13) SYNC
+% 13) SYNC p113
 % 14) ADVFILT
+% 22) ENBW?
 
-% 15) CEXP
-
-% 16) COFA
-% 17) COFP
-
-% 18) OAUX (!)
-% 19) AUXV (!)
-
-% 20) OUTP? (!!!!)
+% 20) OUTP? (!!!!) p132
 % 21) SNAP? (!!!)
 
+% 18) OAUX (!) p116
+% 19) AUXV (!)
+
+
+
+
+% 16) COFA p114
+% 17) COFP
 
 % 22) Data Streaming Commands ? p140
 
@@ -61,7 +60,6 @@ classdef SR860_dev < aDevice
     
     %------------ SET CMD public block -----------
     methods (Access = public) % SET FUNCTIONS
-        
         function set_gen_config(obj, amp_V, freq_Hz, offset)
             arguments
                 obj
@@ -185,13 +183,74 @@ classdef SR860_dev < aDevice
                 obj.send_and_log(CMD);
         end
     
-    
+        function set_expand(obj, exp_value, out_ch)
+            arguments
+                obj
+                exp_value (1,1) {mustBeMember(exp_value, [1, 10, 100])}
+                out_ch (1,1) {mustBeMember(out_ch, ...
+                    ["XYR", "X", "Y", "XY", "R"])} = "XYR"
+            end
+                Contains = @(str1, str2) ...
+                    ~isempty(find(char(str1) == char(str2), 1));
+
+                switch exp_value
+                    case 1
+                        exp_mode = 0;
+                    case 10
+                        exp_mode = 1;
+                    case 100
+                        exp_mode = 2;
+                end
+
+                if Contains(out_ch, "X")
+                    CMD = sprintf("CEXP X, %d", exp_mode);
+                end
+                if Contains(out_ch, "Y")
+                    CMD2 = sprintf("CEXP Y, %d", exp_mode);
+                    CMD = CMD + ";" + CMD2;
+                end
+                if Contains(out_ch, "R")
+                    CMD2 = sprintf("CEXP R, %d", exp_mode);
+                    CMD = CMD + ";" + CMD2;
+                end
+                obj.send_and_log(CMD);
+        end
+
+        function time_const = set_time_constant(obj, time_const)
+            arguments
+                obj
+                time_const (1,1) {mustBeNumeric(time_const), ...
+                    mustBeInRange(time_const, 1e-6, 30e3)}
+            end
+                [time_const, ind] = find_best_time_constant(time_const);
+                CMD = sprintf("OFLT %d", ind);
+                obj.send_and_log(CMD);
+        end
+
+        function set_filter_slope(obj, slope)
+            arguments
+                obj
+                slope (1,1) {mustBeMember(slope, ["6 dB/oct", "12 dB/oct", ...
+                    "18 dB/oct", "24 dB/oct"])}
+            end
+                switch slope
+                    case "6 dB/oct"
+                        num = 0;
+                    case "12 dB/oct"
+                        num = 1;
+                    case "18 dB/oct"
+                        num = 2;
+                    case "24 dB/oct"
+                        num = 3;
+                end
+                CMD = sprintf("OFSL %d", num);
+                obj.send_and_log(CMD);
+        end
     end
 
 
     %------------ GET CMD public block -----------
     methods (Access = public) % GET FUNCTIONS
-
         function [amp_V, freq_Hz] = get_genVF(obj)
             amp_V = obj.get_gen_amp();
             freq_Hz = obj.get_gen_freq();
@@ -221,6 +280,19 @@ classdef SR860_dev < aDevice
             CMD = "ILVL?";
             resp = obj.query_and_log(CMD);
             value = str2double(resp);
+        end
+    
+        function [Xexp, Yexp, Rexp] = get_expand(obj)
+            Xexp = obj.query_and_log("CEXP? X");
+            Yexp = obj.query_and_log("CEXP? Y");
+            Rexp = obj.query_and_log("CEXP? R");
+            % FIMXE: resp format?
+        end
+   
+        function time_const = get_time_constant(obj)
+            resp = obj.query_and_log("OFLT ?");
+            time_const = str2double(resp);
+            time_const = adev_utils.round_to_digit(time_const, 6);
         end
     end
 
@@ -331,4 +403,27 @@ end
 sense = Sens_array(ind);
 ind = ind - 1;
 end
+
+function [time_const, ind] = find_best_time_constant(time_const)
+tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+    30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
+
+Min_tc = tc_array(1);
+Max_tc = tc_array(end);
+if time_const < Min_tc
+    time_const = Min_tc;
+end
+if time_const > Max_tc
+    time_const = Max_tc
+end
+
+[~, ind] = min(abs(tc_array-time_const));
+time_const = tc_array(ind);
+ind = ind - 1;
+
+end
+
+
+
+
 

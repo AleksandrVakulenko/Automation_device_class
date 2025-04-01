@@ -34,11 +34,11 @@ Ammeter.config("current")
 Ammeter.config("charge")
 
 %%
-Ammeter.set_zero_check("enable");
+Ammeter.enable_feedback("enable");
 
 %%
 
-Ammeter.set_zero_check("disable");
+Ammeter.enable_feedback("disable");
 
 %%
 
@@ -61,7 +61,8 @@ Amp_arr = [];
 Freq_arr = [];
 Timer = tic;
 
-Ammeter.set_zero_check("disable");
+Ammeter.enable_feedback("disable");
+pause(2);
 
 stop = false;
 while ~stop
@@ -85,7 +86,7 @@ while ~stop
     drawnow
 end
 
-Ammeter.set_zero_check("enable");
+Ammeter.enable_feedback("enable");
 delete(Ammeter)
 
 

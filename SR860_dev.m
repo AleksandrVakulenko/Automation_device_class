@@ -1,4 +1,14 @@
-
+% Date: 2025.04.01
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: Stanford Research
+% Model: SR830
+% Description: Lock In Amplifier
+% 
+% ------------
 
 % TODO:
 
@@ -37,13 +47,21 @@ classdef SR860_dev < aDevice
         end
     end
 
-
-    %------------ SET CMD public block -----------
-    methods (Access = public) % SET FUNCTIONS
+    %---------- COMMON CMD public block ----------
+    methods (Access = public)
         function RESET(obj)
             obj.send_and_log("*RST");
         end
 
+        function resp = get_IDN(obj)
+            resp = obj.query_and_log("*IDN?");
+        end
+    end
+
+    
+    %------------ SET CMD public block -----------
+    methods (Access = public) % SET FUNCTIONS
+        
         function set_gen_config(obj, amp_V, freq_Hz, offset)
             arguments
                 obj
@@ -173,9 +191,6 @@ classdef SR860_dev < aDevice
 
     %------------ GET CMD public block -----------
     methods (Access = public) % GET FUNCTIONS
-        function resp = get_IDN(obj)
-            resp = obj.query_and_log("*IDN?");
-        end
 
         function [amp_V, freq_Hz] = get_genVF(obj)
             amp_V = obj.get_gen_amp();

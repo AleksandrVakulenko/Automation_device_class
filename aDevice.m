@@ -47,7 +47,7 @@ classdef aDevice < handle
         end
     end
 
-    methods (Access = private) % log wrapper for send/query
+    methods (Access = protected) % log wrapper for send/query
         function send_and_log(obj, CMD)
             arguments
                 obj

@@ -13,23 +13,38 @@ Ammeter = K6517b_dev(27);
 % resp = Ammeter.get_IDN;
 % disp(['IDN: ' resp])
 
-% Ammeter.RESET
+% Ammeter.RESET 
 
 % Ammeter.config("current")
 
 % Ammeter.read_last
 
 
-set_zero_check(obj, "enable");
-pause(1)
-set_zero_check(obj, "disable");
-pause(1)
-set_zero_check(obj, "enable");
+%%
 
-% FIXME!
-% set_sensitivity(obj, 0.1);
+Ammeter.config("volt")
+
+%%
+
+Ammeter.config("current")
 
 
+%%
+
+Ammeter.config("charge")
+
+%%
+Ammeter.set_zero_check("enable");
+
+%%
+
+Ammeter.set_zero_check("disable");
+
+%%
+
+actual_sense = Ammeter.set_sensitivity(10e-3)
+
+%%
 delete(Ammeter)
 
 
@@ -45,6 +60,8 @@ Time_arr = [];
 Amp_arr = [];
 Freq_arr = [];
 Timer = tic;
+
+Ammeter.set_zero_check("disable");
 
 stop = false;
 while ~stop
@@ -68,7 +85,7 @@ while ~stop
     drawnow
 end
 
-
+Ammeter.set_zero_check("enable");
 delete(Ammeter)
 
 

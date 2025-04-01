@@ -17,7 +17,9 @@ classdef K6517b_dev < aDevice
             end
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
         end
+
     end
+
 
 
     %------------ SET CMD public block -----------
@@ -26,17 +28,20 @@ classdef K6517b_dev < aDevice
         function config(obj, mode)
             arguments
                 obj
-                mode {mustBeMember(mode, ["volt", "current", "res", "charge"])}
+                mode {mustBeMember(mode, ["volt", "current", "charge"])}
             end
             switch mode
                 case "volt"
-                    CMD = ":CONFigure:VOLTage";
+                    % CMD = ":CONFigure:VOLTage";
+                    CMD = ":SENSe:FUNCtion ""voltage""";
                 case "current"
-                    CMD = ":CONFigure:CURRent";
-                case "res"
-                    CMD = ":CONFigure:RESistance";
+                    % CMD = ":CONFigure:CURRent";
+                    CMD = ":SENSe:FUNCtion ""current""";
+%                 case "res"
+%                     CMD = ":CONFigure:RESistance";
                 case "charge"
-                    CMD = ":CONFigure:CHARge";
+                    % CMD = ":CONFigure:CHARge";
+                    CMD = ":SENSe:FUNCtion ""charge""";
                 otherwise
                     error('placeholder') % FIXME
             end
@@ -64,7 +69,7 @@ classdef K6517b_dev < aDevice
         end
 
 
-        function set_sensitivity(obj, Level, mode)
+        function sens = set_sensitivity(obj, Level, mode)
             arguments
                 obj
                 Level (1,1) double
@@ -78,22 +83,16 @@ classdef K6517b_dev < aDevice
             end
 
             CMD = sprintf(":SENSe:%s:RANGe %d", func, Level);
-            % ":SENSe:%s:RANGe ?"
-            
             obj.send_and_log(CMD);
+
+
+            CMD = sprintf(":SENSe:%s:RANGe?", func);
+            resp = obj.query_and_log(CMD);
+            sens = str2double(resp);
         end 
 
 
-%         function set_sensitivity(obj, Level, mode)
-%             arguments
-%                 obj
-%                 Level (1,1) double
-%                 mode {mustBeMember(mode, ["voltage", "current"])}
-%             end
-%             [~, ind] = find_best_sensitivity(Level, mode);
-%             CMD = sprintf("SCAL %d", ind);
-%             obj.send_and_log(CMD);
-%         end
+
     
 
 

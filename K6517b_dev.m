@@ -1,4 +1,4 @@
-% Date: 2025.04.01
+% Date: 2025.04.02
 % Author: Aleksandr Vakulenko
 % Licensed after GNU GPL v3
 %
@@ -7,7 +7,7 @@
 % Manufacturer: Keithley
 % Model: 6517b
 % Description: Electrometer
-% 
+%
 % ------------
 
 % TODO:
@@ -16,16 +16,16 @@
 %  3) Make sense func whitout mode
 %  4) find useful CMDs: speed, digits, ...
 %  5) find values of Feedback elements
-%  6) 
+%  6)
 
-% set_zero_check
-% enable_feedback
 classdef K6517b_dev < aDevice
     methods (Access = public)
         function obj = K6517b_dev(GPIB_num)
             arguments
-                % FIXME: maybe list of values? (mustbemember)
-                GPIB_num {adev_utils.GPIB_validation(GPIB_num)}
+                GPIB_num {adev_utils.GPIB_validation(GPIB_num), ...
+                    mustBeMember(GPIB_num, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
+                    25, 26, 27, 28, 29, 30])}
             end
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
         end
@@ -73,10 +73,10 @@ classdef K6517b_dev < aDevice
         end
 
         function enable_feedback(obj, state)
-        arguments
-            obj
-            state (1,1) string {mustBeMember(state, ["enable", "disable"])}
-        end
+            arguments
+                obj
+                state (1,1) string {mustBeMember(state, ["enable", "disable"])}
+            end
             if state == "enable"
                 CMD = ":SYSTem:ZCHeck OFF";
             else
@@ -91,7 +91,7 @@ classdef K6517b_dev < aDevice
                 Level (1,1) double
                 mode {mustBeMember(mode, ["voltage", "current"])} = "current";
             end
-            
+
             if mode == "voltage"
                 func = "VOLTage";
             else
@@ -105,7 +105,7 @@ classdef K6517b_dev < aDevice
             CMD = sprintf(":SENSe:%s:RANGe?", func);
             resp = obj.query_and_log(CMD);
             sens = str2double(resp);
-        end 
+        end
     end
 
 

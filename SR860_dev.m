@@ -1,4 +1,4 @@
-% Date: 2025.04.01
+% Date: 2025.04.02
 % Author: Aleksandr Vakulenko
 % Licensed after GNU GPL v3
 %
@@ -11,15 +11,19 @@
 % ------------
 
 % TODO:
-% 1) Data Streaming Commands ? p140
+% 1) OVERLOAD INFO
+% 2) Data Streaming Commands ? p140
+
 
 classdef SR860_dev < aDevice
 
     methods (Access = public)
         function obj = SR860_dev(GPIB_num)
             arguments
-                % FIXME: maybe list of values?
-                GPIB_num {adev_utils.GPIB_validation(GPIB_num)}
+                GPIB_num {adev_utils.GPIB_validation(GPIB_num), ...
+                    mustBeMember(GPIB_num, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
+                    25, 26, 27, 28, 29, 30])}
             end
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
         end
@@ -164,7 +168,7 @@ classdef SR860_dev < aDevice
                 case 0.010
                     Text = "10M";
                 otherwise
-                    error('placeholder') % FIXME
+                    error('unreachable code');
             end
             CMD = sprintf("IRNG %s", Text);
             obj.send_and_log(CMD);
@@ -348,7 +352,7 @@ classdef SR860_dev < aDevice
 
 
     %----------- CMD PRIVATE block -----------
-    methods (Access = private) % FIXME: make private (done)
+    methods (Access = private)
         function set_gen_freq(obj, freq_Hz)
             arguments
                 obj

@@ -19,10 +19,6 @@
 % 20) OUTP? (!!!!) p132
 % 21) SNAP? (!!!)
 
-% 18) OAUX (!) p116
-% 19) AUXV (!)
-
-
 
 
 % 16) COFA p114
@@ -57,6 +53,28 @@ classdef SR860_dev < aDevice
         end
     end
 
+    methods (Access = public)
+        function aux_set_voltage(obj, ch_num, value)
+            arguments
+                obj
+                ch_num {mustBeMember(ch_num, [1, 2, 3, 4])}
+                value {mustBeInRange(value, -10, 10)}
+            end
+            CMD = sprintf("AUXV %d, %d", ch_num-1, value);
+            obj.send_and_log(CMD);    
+        end
+        
+        function volt = aux_get_voltage(obj, ch_num)
+            arguments
+                obj
+                ch_num {mustBeMember(ch_num, [1, 2, 3, 4])}
+            end
+            CMD = sprintf("OAUX? %d", ch_num-1);
+            resp = obj.query_and_log(CMD);
+            resp = str2double(resp);
+            volt = adev_utils.round_to_digit(resp, 6); % FIXME 6?
+        end
+    end
     
     %------------ SET CMD public block -----------
     methods (Access = public) % SET FUNCTIONS
@@ -113,8 +131,9 @@ classdef SR860_dev < aDevice
         function set_current_input_range(obj, curr_range)
             arguments
                 obj
-                curr_range {mustBeMember(curr_range, "1u", "10n")}
+                curr_range {mustBeMember(curr_range, ["1u", "10n"])}
             end
+            % FIXME: bad argument format
             switch curr_range
                 case "1u"
                     Text = "1MEG";
@@ -123,16 +142,17 @@ classdef SR860_dev < aDevice
                 otherwise
                     error('placeholder') % FIXME
             end
-            CMD = spritntf("ICUR %s", Text);
+            CMD = sprintf("ICUR %s", Text);
             obj.send_and_log(CMD);
         end
 
         function set_voltage_input_range(obj, volt_range)
             arguments
                 obj
-                volt_range {mustBeMember(volt_range,...
-                    [1, 0.3, 0.1, 0.03, 0.010])} = 1;
+                volt_range (1,1) double {mustBeMember(volt_range, ...
+                    [1, 0.3, 0.1, 0.03, 0.01])};
             end
+            % FIXME: bad argument format
             switch volt_range
                 case 1.000
                     Text = "1V";
@@ -147,7 +167,7 @@ classdef SR860_dev < aDevice
                 otherwise
                     error('placeholder') % FIXME
             end
-            CMD = spritntf("IRANG %s", Text);
+            CMD = sprintf("IRNG %s", Text);
             obj.send_and_log(CMD);
         end
 
@@ -170,7 +190,7 @@ classdef SR860_dev < aDevice
                 obj
                 src {mustBeMember(src, ["INT", "EXT"])}
             end
-            CMD = spritnf("RSRC %s", src);
+            CMD = sprintf("RSRC %s", src);
             obj.send_and_log(CMD);
         end
 
@@ -201,9 +221,11 @@ classdef SR860_dev < aDevice
                     case 100
                         exp_mode = 2;
                 end
-
+                
                 if Contains(out_ch, "X")
                     CMD = sprintf("CEXP X, %d", exp_mode);
+                else
+                    CMD = "";
                 end
                 if Contains(out_ch, "Y")
                     CMD2 = sprintf("CEXP Y, %d", exp_mode);
@@ -280,19 +302,24 @@ classdef SR860_dev < aDevice
             CMD = "ILVL?";
             resp = obj.query_and_log(CMD);
             value = str2double(resp);
+            % FIXME: add description
         end
     
         function [Xexp, Yexp, Rexp] = get_expand(obj)
             Xexp = obj.query_and_log("CEXP? X");
             Yexp = obj.query_and_log("CEXP? Y");
             Rexp = obj.query_and_log("CEXP? R");
-            % FIMXE: resp format?
+            Xexp = 10^str2double(Xexp);
+            Yexp = 10^str2double(Yexp);
+            Rexp = 10^str2double(Rexp);
         end
    
         function time_const = get_time_constant(obj)
-            resp = obj.query_and_log("OFLT ?");
-            time_const = str2double(resp);
-            time_const = adev_utils.round_to_digit(time_const, 6);
+            resp = obj.query_and_log("OFLT?");
+            tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, ...
+                3e-3, 10e-3, 30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, ...
+                300, 1000, 3000, 10e3, 30e3];
+            time_const = tc_array(str2double(resp)+1);
         end
     end
 

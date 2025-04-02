@@ -5,7 +5,7 @@
 % ----INFO----:
 % <Class for instrument control>
 % Manufacturer: Stanford Research
-% Model: SR830
+% Model: SR860
 % Description: Lock In Amplifier
 % 
 % ------------

@@ -49,22 +49,22 @@ SR860.set_harm_num(1);
 
 delete(SR860)
 
+
+
+
 %% MANUAL TEST
 
 % TEST list:
-%  1) 
-%  2) 
-%  3) 
-%  4) 
-%  5) 
+%  1) set_sync_filter
+%  2) set_advanced_filter
+%  3) get_filter_NBW
+%  4) data_get_XY
+%  5) data_get_R_and_Phase
 %  6) 
 %  7) 
 %  8) 
 %  9) 
 % 10) 
-% 11) 
-% 12) 
-% 13) 
 
 %%
 clc
@@ -72,6 +72,56 @@ SR860 = SR860_dev(4);
 
 %%
 delete(SR860)
+
+
+%% TEST data_get_XY
+%  TEST data_get_R_and_Phase
+clc
+[X, Y] = SR860.data_get_XY;
+[R, Th] = SR860.data_get_R_and_Phase;
+disp(['X = ' num2str(X) ', Y = ' num2str(Y)]);
+disp(['R = ' num2str(R) ', Th = ' num2str(Th)]);
+
+
+%% TEST get_filter_NBW
+clc
+SR860.set_time_constant(0.001);
+
+SR860.set_filter_slope("6 dB/oct");
+NBW = SR860.get_filter_NBW();
+disp([num2str(NBW) ' Hz'])
+pause(0.5)
+
+SR860.set_filter_slope("12 dB/oct");
+NBW = SR860.get_filter_NBW();
+disp([num2str(NBW) ' Hz'])
+pause(0.5)
+
+SR860.set_filter_slope("18 dB/oct");
+NBW = SR860.get_filter_NBW();
+disp([num2str(NBW) ' Hz'])
+pause(0.5)
+
+SR860.set_filter_slope("24 dB/oct");
+NBW = SR860.get_filter_NBW();
+disp([num2str(NBW) ' Hz'])
+
+
+%% TEST set_sync_filter
+%  TEST set_advanced_filter
+clc
+SR860.set_sync_filter("on")
+pause(0.5)
+SR860.set_sync_filter("off")
+pause(0.5)
+SR860.set_sync_filter("on")
+pause(0.5)
+SR860.set_advanced_filter("on")
+pause(0.5)
+SR860.set_advanced_filter("off")
+pause(0.5)
+SR860.set_advanced_filter("on")
+
 
 %% TEST aux_set_voltage
 %  TEST aux_get_voltage
@@ -223,8 +273,8 @@ SR860 = SR860_dev(4);
 
 Plot_period = 20; % s
 Time_arr = [];
-Amp_arr = [];
-Freq_arr = [];
+R_arr = [];
+P_arr = [];
 Timer = tic;
 
 stop = false;
@@ -234,11 +284,12 @@ while ~stop
         stop = true;
     end
     Time_arr = [Time_arr time];
-    [Amp, Freq] = SR860.get_genVF;
-    Amp_arr = [Amp_arr Amp];
+    [R, Phase] = SR860.data_get_R_and_Phase;
+    R_arr = [R_arr R];
+    P_arr = [P_arr Phase];
 
     cla
-    plot(Time_arr, Amp_arr)
+    plot(R_arr, P_arr);
     set(gca, 'yscale', 'log')
     drawnow
 end
@@ -246,7 +297,7 @@ end
 
 delete(SR860)
 
-Time_arr(end)/numel(Time_arr)
+
 
 
 

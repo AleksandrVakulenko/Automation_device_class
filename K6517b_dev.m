@@ -14,8 +14,9 @@
 %  1) Add charge sense mode
 %  2) Add prop of current mode
 %  3) Make sense func whitout mode
-%  4) 
-%  5) find useful CMDs
+%  4) find useful CMDs: speed, digits, ...
+%  5) find values of Feedback elements
+%  6) 
 
 % set_zero_check
 % enable_feedback
@@ -48,7 +49,6 @@ classdef K6517b_dev < aDevice
             CMD = ":FETCh?";
             resp = obj.query_and_log(CMD);
         end
-
     end
 
 
@@ -106,7 +106,6 @@ classdef K6517b_dev < aDevice
             resp = obj.query_and_log(CMD);
             sens = str2double(resp);
         end 
-
     end
 
 

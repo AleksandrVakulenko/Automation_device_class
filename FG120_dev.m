@@ -1,4 +1,14 @@
-
+% Date: 2025.04.02
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: Yokogawa
+% Model: FG120
+% Description: Function generator
+% 
+% ------------
 
 classdef FG120_dev < aDevice
 

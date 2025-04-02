@@ -11,24 +11,7 @@
 % ------------
 
 % TODO:
-
-% 13) SYNC p113
-% 14) ADVFILT
-% 22) ENBW?
-
-% 20) OUTP? (!!!!) p132
-% 21) SNAP? (!!!)
-
-
-
-% 16) COFA p114
-% 17) COFP
-
-% 22) Data Streaming Commands ? p140
-
-
-
-
+% 1) Data Streaming Commands ? p140
 
 classdef SR860_dev < aDevice
 
@@ -73,6 +56,22 @@ classdef SR860_dev < aDevice
             resp = obj.query_and_log(CMD);
             resp = str2double(resp);
             volt = adev_utils.round_to_digit(resp, 6); % FIXME 6?
+        end
+    
+        function [X, Y] = data_get_XY(obj)
+            CMD = "SNAP? 0, 1";
+            resp = obj.query_and_log(CMD);
+            data = sscanf(resp, "%f, %f");
+            X = data(1);
+            Y = data(2);
+        end
+    
+        function [R, Th] = data_get_R_and_Phase(obj)
+            CMD = "SNAP? 2, 3";
+            resp = obj.query_and_log(CMD);
+            data = sscanf(resp, "%f, %f");
+            R = data(1);
+            Th = data(2);
         end
     end
     
@@ -268,6 +267,25 @@ classdef SR860_dev < aDevice
                 CMD = sprintf("OFSL %d", num);
                 obj.send_and_log(CMD);
         end
+   
+        function set_sync_filter(obj, status)
+            arguments
+                obj
+                status {mustBeMember(status, ["on", "off"])}
+            end
+                CMD = sprintf("SYNC %s", status);
+                obj.send_and_log(CMD);
+        end
+    
+        function set_advanced_filter(obj, status)
+            arguments
+                obj
+                status {mustBeMember(status, ["on", "off"])}
+            end
+            CMD = sprintf("ADVFILT %s", status);
+            obj.send_and_log(CMD);
+        end
+    
     end
 
 
@@ -321,6 +339,11 @@ classdef SR860_dev < aDevice
                 300, 1000, 3000, 10e3, 30e3];
             time_const = tc_array(str2double(resp)+1);
         end
+    
+        function NBW = get_filter_NBW(obj)
+            resp = obj.query_and_log("ENBW?");
+            NBW = str2double(resp);
+        end
     end
 
 
@@ -369,7 +392,6 @@ classdef SR860_dev < aDevice
             amp_V = str2double(resp);
             amp_V = adev_utils.round_to_digit(amp_V, 8);
         end
-
     end
     %-----------------------------------------
 
@@ -397,7 +419,6 @@ else
     out = {};
 end
 end
-
 
 function [sense, ind] = find_best_sensitivity(Level, mode)
 arguments
@@ -449,8 +470,5 @@ time_const = tc_array(ind);
 ind = ind - 1;
 
 end
-
-
-
 
 

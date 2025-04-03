@@ -16,7 +16,7 @@
 %  3) Make sense func whitout mode
 %  4) find useful CMDs: speed, digits, ...
 %  5) find values of Feedback elements
-%  6)
+%  6) rename enable_feedback()
 
 classdef K6517b_dev < aDevice
     methods (Access = public)

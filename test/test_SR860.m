@@ -60,7 +60,7 @@ delete(SR860)
 %  3) get_filter_NBW
 %  4) data_get_XY
 %  5) data_get_R_and_Phase
-%  6) 
+%  6) get_ESR
 %  7) 
 %  8) 
 %  9) 

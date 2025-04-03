@@ -17,7 +17,7 @@ classdef FG120_dev < aDevice
             arguments
                 GPIB_num {adev_utils.GPIB_validation(GPIB_num)}
             end
-            obj@aDevice(Connector_GPIB(GPIB_num))
+            obj@aDevice(Connector_GPIB_fast(GPIB_num))
             DEBUG_MSG("FG120 generator", 'red', 'ctor')
         end
     end
@@ -43,6 +43,13 @@ classdef FG120_dev < aDevice
             unit = "Hz";
         end
 
+        function bad_foo(obj)
+            CMD = ['freqz?'];
+            freq_text = obj.con.query(CMD);
+            freq_text
+            freq = sscanf(freq_text, "FREQ %fHz");
+            unit = "Hz";
+        end
 
     end
 

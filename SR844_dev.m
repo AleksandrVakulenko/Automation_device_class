@@ -1,27 +1,21 @@
-% Date: 2025.04.02
+% Date: 2025.04.03
 % Author: Aleksandr Vakulenko
 % Licensed after GNU GPL v3
 %
 % ----INFO----:
 % <Class for instrument control>
 % Manufacturer: Stanford Research
-% Model: SR860
-% Description: Lock In Amplifier
+% Model: SR844
+% Description: RF Lock In Amplifier
 % 
 % ------------
 
-% TODO:
-% 1) OVERLOAD INFO
-% 2) Data Streaming Commands ? p140
-% 3) Add error check CMDs:
-%   *ESR? { j } p148
-% 4) LIAS?
-% 5) 
 
-classdef SR860_dev < aDevice
+
+classdef SR844_dev < aDevice
 
     methods (Access = public)
-        function obj = SR860_dev(GPIB_num)
+        function obj = SR844_dev(GPIB_num)
             arguments
                 GPIB_num {adev_utils.GPIB_validation(GPIB_num), ...
                     mustBeMember(GPIB_num, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
@@ -41,15 +35,15 @@ classdef SR860_dev < aDevice
         function resp = get_IDN(obj)
             resp = obj.query_and_log("*IDN?");
         end
-
+    
         function Standart_event_status = get_ESR(obj)
             resp = obj.query_and_log("*ESR?");
             resp = dec2bin(num2str(resp), 8);
             data = (resp' == '1');
-            Standart_event_status = struct('Op_complete', data(1), ...
-                'In_queue_overflow', data(2), 'unused2', data(3), ...
-                'Out_queue_overflow', data(4), 'CMD_exec_err', data(5), ...
-                'CMD_illegal', data(6), 'URQ', data(7), 'PWRUP', data(8));
+            Standart_event_status = struct('RXQ', data(1), ...
+                'unused1', data(2), 'TXQ', data(3), 'unused3', data(4), ...
+                'EXE', data(5), 'CMD', data(6), 'URQ', data(7), ...
+                'PON', data(8));
         end
     end
 
@@ -57,7 +51,7 @@ classdef SR860_dev < aDevice
         function aux_set_voltage(obj, ch_num, value)
             arguments
                 obj
-                ch_num {mustBeMember(ch_num, [1, 2, 3, 4])}
+                ch_num {mustBeMember(ch_num, [1, 2])}
                 value {mustBeInRange(value, -10, 10)}
             end
             CMD = sprintf("AUXV %d, %d", ch_num-1, value);
@@ -67,7 +61,7 @@ classdef SR860_dev < aDevice
         function volt = aux_get_voltage(obj, ch_num)
             arguments
                 obj
-                ch_num {mustBeMember(ch_num, [1, 2, 3, 4])}
+                ch_num {mustBeMember(ch_num, [1, 2])}
             end
             CMD = sprintf("OAUX? %d", ch_num-1);
             resp = obj.query_and_log(CMD);
@@ -76,7 +70,7 @@ classdef SR860_dev < aDevice
         end
     
         function [X, Y] = data_get_XY(obj)
-            CMD = "SNAP? 0, 1";
+            CMD = "SNAP? 1, 2";
             resp = obj.query_and_log(CMD);
             data = sscanf(resp, "%f, %f");
             X = data(1);
@@ -84,7 +78,7 @@ classdef SR860_dev < aDevice
         end
     
         function [R, Th] = data_get_R_and_Phase(obj)
-            CMD = "SNAP? 2, 3";
+            CMD = "SNAP? 3, 5";
             resp = obj.query_and_log(CMD);
             data = sscanf(resp, "%f, %f");
             R = data(1);
@@ -94,26 +88,11 @@ classdef SR860_dev < aDevice
     
     %------------ SET CMD public block -----------
     methods (Access = public) % SET FUNCTIONS
-        function set_gen_config(obj, amp_V, freq_Hz, offset)
-            arguments
-                obj
-                amp_V (1, 1) double {mustBeNumeric(amp_V), ...
-                    mustBeInRange(amp_V, 1e-9, 2, "inclusive")}
-                freq_Hz (1, 1) double {mustBeNumeric(freq_Hz), ...
-                    mustBeInRange(freq_Hz, 0.001, 500e3, "inclusive")}
-                offset (1, 1) double {mustBeNumeric(offset), ...
-                    mustBeInRange(offset, -5, 5, "inclusive")} = 0
-            end
-            obj.set_gen_freq(freq_Hz);
-            obj.set_gen_amp(amp_V);
-            obj.set_gen_offset(offset);
-        end
-
         function set_sensitivity(obj, Level, mode)
             arguments
                 obj
                 Level (1,1) double
-                mode {mustBeMember(mode, ["voltage", "current"])}
+                mode {mustBeMember(mode, "voltage")} = "voltage";
             end
             [~, ind] = find_best_sensitivity(Level, mode);
             CMD = sprintf("SCAL %d", ind);
@@ -127,77 +106,6 @@ classdef SR860_dev < aDevice
                     mustBeInRange(phase_deg, -360e3, 360e3, "inclusive")}
             end
             CMD = sprintf("PHAS %0.7d DEG", phase_deg);
-            obj.send_and_log(CMD);
-        end
-
-        function set_harm_num(obj, harm_n)
-            arguments
-                obj
-                harm_n (1,1) {mustBeNumeric(harm_n), ...
-                    mustBeInRange(harm_n, 1, 99, "inclusive")}
-            end
-            if  harm_n ~= round(harm_n)
-                harm_n = round(harm_n);
-                warning(['Harmonic number rounded to ' num2str(harm_n)]);
-            end
-            CMD = sprintf("HARM %d", harm_n);
-            obj.send_and_log(CMD);
-        end
-
-        function set_current_input_range(obj, curr_range)
-            arguments
-                obj
-                curr_range {mustBeMember(curr_range, ["1u", "10n"])}
-            end
-            % FIXME: bad argument format
-            switch curr_range
-                case "1u"
-                    Text = "1MEG";
-                case "10n"
-                    Text = "100MEG";
-                otherwise
-                    error('placeholder') % FIXME
-            end
-            CMD = sprintf("ICUR %s", Text);
-            obj.send_and_log(CMD);
-        end
-
-        function set_voltage_input_range(obj, volt_range)
-            arguments
-                obj
-                volt_range (1,1) double {mustBeMember(volt_range, ...
-                    [1, 0.3, 0.1, 0.03, 0.01])};
-            end
-            % FIXME: bad argument format
-            switch volt_range
-                case 1.000
-                    Text = "1V";
-                case 0.300
-                    Text = "300M";
-                case 0.100
-                    Text = "100M";
-                case 0.030
-                    Text = "30M";
-                case 0.010
-                    Text = "10M";
-                otherwise
-                    error('unreachable code');
-            end
-            CMD = sprintf("IRNG %s", Text);
-            obj.send_and_log(CMD);
-        end
-
-        function configure_input(obj, input_mode)
-            arguments
-                obj
-                input_mode {mustBeMember(input_mode, ["VOLT", "CURR"])};
-
-            end
-            CMD_1 = sprintf("IVMD %s", input_mode);
-            CMD_2 = "ISRC A"; % NOTE:  always A(V) (not A-B)
-            CMD_3 =  "ICPL DC"; % NOTE:  always DC(V) mode
-            CMD_4 = "IGND GROund";  % NOTE:  always ground mode
-            CMD = CMD_1 +";" + CMD_2 +";" + CMD_3 +";" + CMD_4;
             obj.send_and_log(CMD);
         end
 
@@ -284,34 +192,11 @@ classdef SR860_dev < aDevice
                 CMD = sprintf("OFSL %d", num);
                 obj.send_and_log(CMD);
         end
-   
-        function set_sync_filter(obj, status)
-            arguments
-                obj
-                status {mustBeMember(status, ["on", "off"])}
-            end
-                CMD = sprintf("SYNC %s", status);
-                obj.send_and_log(CMD);
-        end
-    
-        function set_advanced_filter(obj, status)
-            arguments
-                obj
-                status {mustBeMember(status, ["on", "off"])}
-            end
-            CMD = sprintf("ADVFILT %s", status);
-            obj.send_and_log(CMD);
-        end
-    
     end
 
 
     %------------ GET CMD public block -----------
     methods (Access = public) % GET FUNCTIONS
-        function [amp_V, freq_Hz] = get_genVF(obj)
-            amp_V = obj.get_gen_amp();
-            freq_Hz = obj.get_gen_freq();
-        end
 
         function phase_deg = get_detector_phase(obj)
             CMD = "PHAS?";
@@ -327,19 +212,6 @@ classdef SR860_dev < aDevice
             freq_Hz = adev_utils.round_to_digit(freq_Hz, 4);
         end
 
-        function harm_num = get_harm_num(obj)
-            CMD = "HARM?";
-            resp = obj.query_and_log(CMD);
-            harm_num = str2double(resp);
-        end
-
-        function value = get_signal_strength(obj)
-            CMD = "ILVL?";
-            resp = obj.query_and_log(CMD);
-            value = str2double(resp);
-            % FIXME: add description
-        end
-    
         function [Xexp, Yexp, Rexp] = get_expand(obj)
             Xexp = obj.query_and_log("CEXP? X");
             Yexp = obj.query_and_log("CEXP? Y");
@@ -351,12 +223,18 @@ classdef SR860_dev < aDevice
    
         function time_const = get_time_constant(obj)
             resp = obj.query_and_log("OFLT?");
-            tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, ...
-                3e-3, 10e-3, 30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, ...
-                300, 1000, 3000, 10e3, 30e3];
+            tc_array = [100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+                30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
             time_const = tc_array(str2double(resp)+1);
         end
     
+        function time_const = get_time_constant_bad(obj)
+            resp = obj.query_and_log("OFLTT?");
+            tc_array = [100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+                30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
+            time_const = tc_array(str2double(resp)+1);
+        end
+
         function NBW = get_filter_NBW(obj)
             resp = obj.query_and_log("ENBW?");
             NBW = str2double(resp);
@@ -364,97 +242,24 @@ classdef SR860_dev < aDevice
     end
 
 
-    %----------- CMD PRIVATE block -----------
-    methods (Access = private)
-        function set_gen_freq(obj, freq_Hz)
-            arguments
-                obj
-                freq_Hz (1, 1) double {mustBeNumeric(freq_Hz), ...
-                    mustBeInRange(freq_Hz, 0.001, 500e3, "inclusive")}
-            end
-            CMD = sprintf("FREQINT %f HZ", freq_Hz);
-            obj.send_and_log(CMD);
-        end
 
-        function set_gen_amp(obj, amp_V)
-            arguments
-                obj
-                amp_V (1, 1) double {mustBeNumeric(amp_V), ...
-                    mustBeInRange(amp_V, 1e-9, 2, "inclusive")}
-            end
-            CMD = sprintf("SLVL %0.3f V", amp_V);
-            obj.send_and_log(CMD);
-        end
-
-        function set_gen_offset(obj, offset)
-            arguments
-                obj
-                offset (1, 1) double {mustBeNumeric(offset), ...
-                    mustBeInRange(offset, -5, 5, "inclusive")}
-            end
-            CMD = sprintf("SOFF %0.3f V", offset);
-            obj.send_and_log(CMD);
-        end
-
-        function freq_Hz = get_gen_freq(obj)
-            CMD = "FREQINT?";
-            resp = obj.query_and_log(CMD);
-            freq_Hz = str2double(resp);
-            freq_Hz = adev_utils.round_to_digit(freq_Hz, 4);
-        end
-
-        function amp_V = get_gen_amp(obj)
-            CMD = "SLVL?";
-            resp = obj.query_and_log(CMD);
-            amp_V = str2double(resp);
-            amp_V = adev_utils.round_to_digit(amp_V, 8);
-        end
-    end
-    %-----------------------------------------
 
 end
 
 
 
-% FIXME: delete unsued func
-function out = set_argout(n_out, varargin)
-n_in = nargin-1;
-if n_out > 0
-    if n_in <= n_out
-        for i = 1:n_in
-            out{i} = varargin{i};
-        end
-        for i = n_in+1:n_out
-            out{i} = [];
-        end
-    else % n_in > n_out
-        for i = 1:n_out
-            out{i} = varargin{i};
-        end
-    end
-else
-    out = {};
-end
-end
 
 function [sense, ind] = find_best_sensitivity(Level, mode)
 arguments
     Level (1,1) double
-    mode {mustBeMember(mode, ["voltage", "current"])}
+    mode {mustBeMember(mode, "voltage")} = "voltage"
 end
-Sens_array_V = [1, 500e-3, 200e-3, 100e-3, 50e-3, 20e-3, ...
-    10e-3, 5e-3, 2e-3, 1e-3, 500e-6, 200e-6, 100e-6, 50e-6, ...
-    20e-6, 10e-6, 5e-6, 2e-6, 1e-6, 500e-9, 200e-9, 100e-9, ...
-    50e-9, 20e-9, 10e-9, 5e-9, 2e-9, 1e-9];
-Sens_array_I = Sens_array_V/1e6;
-switch mode
-    case "voltage"
-        Sens_array = Sens_array_V;
-        Limit = 1; % V
-    case "current"
-        Sens_array = Sens_array_I;
-        Limit = 1e-6; % A
-end
+Sens_array_V = [1, 0.3, 0.1, 30e-3, 10e-3, 3e-3, 1e-3, 300e-6, 100e-6, ...
+    30e-6, 10e-6, 3e-6, 1e-6, 300e-9, 100e-9];
+
+Sens_array = Sens_array_V;
+Limit = 1; % V
+
 if Level > Limit*1.1
     warning("Level of sensitivity is above maximum")
     Level = Limit;
@@ -470,7 +275,8 @@ ind = ind - 1;
 end
 
 function [time_const, ind] = find_best_time_constant(time_const)
-tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+% model SR844
+tc_array = [100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
     30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
 
 Min_tc = tc_array(1);

@@ -1,4 +1,4 @@
-% Date: 2025.04.02
+% Date: 2025.04.03
 % Author: Aleksandr Vakulenko
 % Licensed after GNU GPL v3
 %
@@ -72,13 +72,18 @@ classdef K6517b_dev < aDevice
             obj.send_and_log(CMD);
         end
 
-        function enable_feedback(obj, state)
+        function enable_feedback(obj, state, speed)
             arguments
                 obj
                 state (1,1) string {mustBeMember(state, ["enable", "disable"])}
+                speed {mustBeMember(speed, ["fast", "normal"])} = "normal"
             end
             if state == "enable"
                 CMD = ":SYSTem:ZCHeck OFF";
+                if speed == "normal"
+                    % NOTE: wait for input relax time
+                    adev_utils.Wait(3, 'activate Electrometer input'); % FIXME: magic constant
+                end
             else
                 CMD = ":SYSTem:ZCHeck ON";
             end

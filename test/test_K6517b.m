@@ -34,7 +34,10 @@ Ammeter.config("current")
 Ammeter.config("charge")
 
 %%
-Ammeter.enable_feedback("enable");
+Ammeter.enable_feedback("enable", "fast");
+
+%%
+Ammeter.enable_feedback("enable", "normal");
 
 %%
 

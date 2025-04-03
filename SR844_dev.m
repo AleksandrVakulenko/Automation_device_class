@@ -45,6 +45,7 @@ classdef SR844_dev < aDevice
                 'EXE', data(5), 'CMD', data(6), 'URQ', data(7), ...
                 'PON', data(8));
         end
+
     end
 
     methods (Access = public)

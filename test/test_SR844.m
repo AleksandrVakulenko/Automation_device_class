@@ -27,7 +27,13 @@ SR844 = SR844_dev(8);
 % end
 
 
-SR844.get_ESR
+ESR_struct = SR844.get_ESR;
+% disp(ESR_struct)
+
+        fprintf('\n\n>>>>>CATCH ERROR>>>>>\n\n');
+%         ESR_struct = SR860.get_ESR;
+        disp(ESR_struct)
+        fprintf('<<<<<END CATCH ERROR<<<<<\n\n\n');
 
 delete(SR844)
 disp('END')

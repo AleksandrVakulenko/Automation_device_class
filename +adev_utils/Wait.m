@@ -32,6 +32,7 @@ else
                 num2str(time_s, '%0.2f') msg])
         end
         pause(Pause_time);
+        pause(0.1);%FIXME
         if Time > time_s
             stop = true;
         end

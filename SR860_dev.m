@@ -73,15 +73,25 @@ classdef SR860_dev < aDevice
             resp = str2double(resp);
             volt = adev_utils.round_to_digit(resp, 6); % FIXME 6?
         end
-    
+
         function [X, Y] = data_get_XY(obj)
             CMD = "SNAP? 0, 1";
-            resp = obj.query_and_log(CMD);
+            try
+                resp = obj.query_and_log(CMD);
+            catch
+                for i = 1:10 % FIXME: DEBUG! refactor it
+                    pause(0.1);
+                    resp = obj.query_and_log(CMD);
+                    if ~isempty(resp)
+                        break
+                    end
+                end
+            end
             data = sscanf(resp, "%f, %f");
             X = data(1);
             Y = data(2);
         end
-    
+
         function [R, Th] = data_get_R_and_Phase(obj)
             CMD = "SNAP? 2, 3";
             resp = obj.query_and_log(CMD);

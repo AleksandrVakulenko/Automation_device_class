@@ -50,6 +50,10 @@ classdef SR860_dev < aDevice
                 'unused2', data(3), 'TXQ', data(4), 'EXE', data(5), ...
                 'CMD', data(6), 'URQ', data(7), 'PON', data(8));
         end
+    
+        function resp = READ(obj)
+            resp =obj.con.read();
+        end
     end
 
     methods (Access = public)
@@ -78,28 +82,19 @@ classdef SR860_dev < aDevice
             CMD = "SNAP? 0, 1";
             try
                 resp = obj.query_and_log(CMD);
-            catch
-                N = 10;
-                for i = 1:N % FIXME: DEBUG! refactor it
-                    disp(['Try to read data' num2str(i) '/' num2str(N)])
-                    if i < N/2
-                        pause(0.1);
-                    else
-                        pause(0.5)
-                    end
-                    resp = obj.query_and_log(CMD);
-                    if ~isempty(resp)
-                        break
-                    end
-                end
+            catch err
+                disp('1: no resp');
+                rethrow(err);
             end
+            if isempty(resp)
+                %disp('RECURSION RECURSION RECURSION RECURSION RECURSION RECURSION')
+                [X, Y] = obj.data_get_XY();
+                return;
+            end
+
             data = sscanf(resp, "%f, %f");
-            try
-                X = data(1);
-                Y = data(2);
-            catch
-                resp
-            end
+            X = data(1);
+            Y = data(2);
         end
 
         function [R, Th] = data_get_R_and_Phase(obj)

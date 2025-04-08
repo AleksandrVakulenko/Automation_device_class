@@ -79,8 +79,14 @@ classdef SR860_dev < aDevice
             try
                 resp = obj.query_and_log(CMD);
             catch
-                for i = 1:10 % FIXME: DEBUG! refactor it
-                    pause(0.1);
+                N = 10;
+                for i = 1:N % FIXME: DEBUG! refactor it
+                    disp(['Try to read data' num2str(i) '/' num2str(N)])
+                    if i < N/2
+                        pause(0.1);
+                    else
+                        pause(0.5)
+                    end
                     resp = obj.query_and_log(CMD);
                     if ~isempty(resp)
                         break
@@ -88,8 +94,12 @@ classdef SR860_dev < aDevice
                 end
             end
             data = sscanf(resp, "%f, %f");
-            X = data(1);
-            Y = data(2);
+            try
+                X = data(1);
+                Y = data(2);
+            catch
+                resp
+            end
         end
 
         function [R, Th] = data_get_R_and_Phase(obj)

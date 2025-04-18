@@ -7,15 +7,14 @@ dev = DLPCA200_dev(4);
 pause(0.2)
 
 
-[Current, Time_data, OVLD] = dev.read_data
-[Current, Time_data, OVLD] = dev.read_data
-[Current, Time_data, OVLD] = dev.read_data
+[Current, Time_data, OVLD] = dev.read_data;
+disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
-% pause(0.2)
-% dev.read_last
-% pause(0.2)
-% dev.read_last
-% pause(0.2)
+[Current, Time_data, OVLD] = dev.read_data;
+disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
+
+[Current, Time_data, OVLD] = dev.read_data;
+disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
 
 % pause(0.5)
@@ -23,42 +22,39 @@ delete(dev)
 disp('END')
 
 
-%%
-
-
+%% TEST PLOT DATA
 
 clc
 
 dev = DLPCA200_dev(4);
+try
+    figure
+    Time_arr = [];
+    Current_array = [];
 
-pause(0.2)
+    [~, Time_start] = dev.read_data;
+    stop = false;
+    while ~stop
+        [Current, Time_data, OVLD] = dev.read_data;
+        time = Time_data - Time_start;
+        disp([num2str(time, "%05.1f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
-figure
-Time_arr = [];
-Current_array = [];
+        Time_arr = [Time_arr time];
+        Current_array = [Current_array Current];
 
-Timer = tic;
-stop = false;
-while ~stop
-    time = toc(Timer);
-    if time > 10
-        stop = true;
+        cla
+        plot(Time_arr, Current_array)
+        drawnow
+
+        if time > 10
+            stop = true;
+        end
     end
-    [Current, Time_data, OVLD] = dev.read_data;
-%     disp([num2str(Time_data, "%0.2f") ' ' num2str(Current)]);
-    disp([num2str(Time_data, "%0.2f") ' ' num2str(OVLD)]);
-    
-    Time_arr = [Time_arr Time_data];
-    Current_array = [Current_array Current];
-    
-    cla
-    plot(Time_arr, Current_array)
-    drawnow
 
+catch ERR
+    delete(dev)
+    rethrow(ERR)
 end
-
-
-
 
 delete(dev)
 disp('END')
@@ -66,8 +62,7 @@ disp('END')
 
 
 
-%%
-
+%% TEST SET SENSE
 
 
 

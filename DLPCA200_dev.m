@@ -9,7 +9,7 @@
 % Description: Current to voltage converter
 %
 % The digital interface is implemented on ATmega328P
-% FIXME: need ref to github
+% https://disk.yandex.ru/d/ZrsTtyNYrqvmog
 % ------------
 
 % TODO:
@@ -33,9 +33,10 @@ classdef DLPCA200_dev < aDevice
             obj.set_sensitivity(3, "L");
         end
 
-        %         function resp = get_IDN(obj)
-        %             resp = obj.query_and_log("*IDN?");
-        %         end
+        function resp = get_IDN(obj)
+            warning("*IDN? cmd is not supported");
+            resp = "*IDN? cmd is not supported";
+        end
     end
 
 
@@ -116,6 +117,13 @@ classdef DLPCA200_dev < aDevice
         function [ADC_data, Time_data, OVLD, serv1] = read_last(obj)
             CMD = uint8([1 0 0 0 0]);
             resp = obj.con.query(CMD, "norm");
+            if isempty(resp)
+                pause(0.1);
+                resp = obj.con.query(CMD, "norm");
+                if isempty(resp)
+                    error("Device is not responding");
+                end
+            end
             data_array = uint8(resp);
             serv1 = data_array(1);
             OVLD = data_array(2);

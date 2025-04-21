@@ -17,7 +17,7 @@
 %  2) Create Ammeter_traits
 %  3)
 
-classdef DLPCA200_dev < aDevice
+classdef DLPCA200_dev < aDevice & I2V_converter_traits
     properties (Access = private)
         sense
         bandwidth
@@ -90,6 +90,24 @@ classdef DLPCA200_dev < aDevice
     methods (Access = public)
         function BW = get_bandwidth(obj)
             BW = obj.bandwidth;
+        end
+    end
+
+    
+    methods (Access = protected)
+        function sense = set_current_sensitivity_override(obj, Level)
+            if Level > 1e-3
+                Level = 1e-3;
+            end
+            if Level < 1e-11
+                Level = 1e-11;
+            end
+            Level_exp = fix(log10(Level));
+            [sense, ~] = set_sensitivity(obj, Level_exp);
+        end
+
+        function [Current, Time_data, OVLD] = get_current_value_override(obj)
+            [Current, Time_data, OVLD] = obj.read_data();
         end
     end
 

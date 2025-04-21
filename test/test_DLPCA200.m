@@ -7,13 +7,13 @@ dev = DLPCA200_dev(4);
 pause(0.2)
 
 
-[Current, Time_data, OVLD] = dev.read_data;
+[Current, Time_data, OVLD] = dev.get_current_value;
 disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
-[Current, Time_data, OVLD] = dev.read_data;
+[Current, Time_data, OVLD] = dev.get_current_value;
 disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
-[Current, Time_data, OVLD] = dev.read_data;
+[Current, Time_data, OVLD] = dev.get_current_value;
 disp([num2str(Time_data, "%05.2f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
 
@@ -32,10 +32,10 @@ try
     Time_arr = [];
     Current_array = [];
 
-    [~, Time_start] = dev.read_data;
+    [~, Time_start] = dev.get_current_value;
     stop = false;
     while ~stop
-        [Current, Time_data, OVLD] = dev.read_data;
+        [Current, Time_data, OVLD] = dev.get_current_value;
         time = Time_data - Time_start;
         disp([num2str(time, "%05.1f") ' ' num2str(OVLD) ' ' num2str(Current)]);
 
@@ -73,6 +73,7 @@ dev = DLPCA200_dev(4);
 pause(0.2)
 
 [sense, BW] = dev.set_sensitivity(8, "L")
+sense = dev.set_current_sensitivity(0.001);
 
 % pause(0.5)
 delete(dev)

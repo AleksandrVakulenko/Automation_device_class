@@ -18,7 +18,7 @@
 %  5) find values of Feedback elements
 %  6) rename enable_feedback()
 
-classdef K6517b_dev < aDevice
+classdef K6517b_dev < aDevice & I2V_converter_traits
     methods (Access = public)
         function obj = K6517b_dev(GPIB_num)
             arguments
@@ -118,6 +118,20 @@ classdef K6517b_dev < aDevice
     methods (Access = public)
 
 
+    end
+
+    methods (Access = protected)
+        % FIXME: add to TEST
+        function sense = set_current_sensitivity_override(obj, Level)
+            sense = obj.set_sensitivity(Level, "current");
+        end
+
+        function [Current, Time_data, OVLD] = get_current_value_override(obj)
+            warning('function is not ready to use!')
+            Current = NaN;
+            Time_data = 0;
+            OVLD = false;
+        end
     end
 
 

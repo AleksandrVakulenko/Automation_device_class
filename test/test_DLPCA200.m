@@ -70,10 +70,10 @@ clc
 
 dev = DLPCA200_dev(4);
 
-pause(0.2)
+% pause(0.2)
 
-[sense, BW] = dev.set_sensitivity(8, "L")
-sense = dev.set_current_sensitivity(0.001);
+[sense, BW] = dev.set_sensitivity(4, "L")
+% sense = dev.set_current_sensitivity(0.001);
 
 % pause(0.5)
 delete(dev)

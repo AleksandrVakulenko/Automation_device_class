@@ -1,7 +1,7 @@
 
 
 
-classdef I2V_converter_traits
+classdef I2V_converter_traits < handle
     
     methods (Access = public)
         function sense = set_current_sensitivity(obj, Level)
@@ -9,14 +9,14 @@ classdef I2V_converter_traits
                 obj I2V_converter_traits
                 Level (1,1) double
             end
-            sense = obj.set_I2V_sensitivity(Level);
+            sense = obj.set_current_sensitivity_override(Level);
         end
 
         function [Current, Time_data, OVLD] = get_current_value(obj)
             arguments
                 obj I2V_converter_traits
             end
-            [Current, Time_data, OVLD] = obj.get_I_value();
+            [Current, Time_data, OVLD] = obj.get_current_value_override();
         end
     end
     

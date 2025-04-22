@@ -30,6 +30,7 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
             end
             COM_port_name = string(['COM' num2str(COM_port_N)]);
             obj@aDevice(Connector_COM_RS232(COM_port_name, 115200));
+            pause(0.1);
             obj.set_sensitivity(3, "L");
         end
 
@@ -102,7 +103,7 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
             if Level < 1e-11
                 Level = 1e-11;
             end
-            Level_exp = fix(log10(Level));
+            Level_exp = -fix(log10(Level))
             [sense, ~] = set_sensitivity(obj, Level_exp);
         end
 

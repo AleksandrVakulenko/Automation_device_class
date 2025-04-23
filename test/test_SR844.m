@@ -8,7 +8,10 @@ DEBUG_MSG_ENABLE("disable")
 
 clc
 
-SR844 = SR844_dev(8);
+% SR844 = SR844_dev(8);
+Lockin_model = "SR844_dev";
+Lockin_address = 8;
+SR844 = feval(Lockin_model, Lockin_address);
 
 % SR844.RESET;
 % pause(5)

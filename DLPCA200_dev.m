@@ -31,7 +31,7 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
             COM_port_name = string(['COM' num2str(COM_port_N)]);
             obj@aDevice(Connector_COM_RS232(COM_port_name, 115200));
             pause(0.1);
-            obj.set_sensitivity(3, "L");
+            obj.set_sensitivity(3);
         end
 
         function resp = get_IDN(obj)
@@ -112,7 +112,9 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
         function [Current, Time_data, OVLD] = get_current_value_override(obj)
             [Current, Time_data, OVLD] = obj.read_data();
         end
+    end
 
+    methods (Access = public) % NOTE: override
         function start_of_measurement(obj)
             % nothing to do
         end
@@ -121,7 +123,6 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
             % nothing to do
         end
     end
-
 
     methods (Access = private)
         function set_rangeHL(obj, Range)

@@ -132,7 +132,9 @@ classdef K6517b_dev < aDevice & I2V_converter_traits
             Time_data = 0;
             OVLD = false;
         end
+    end
 
+    methods (Access = public) % NOTE: override
         function start_of_measurement(obj)
             obj.config("current");
             obj.enable_feedback("enable");
@@ -143,7 +145,6 @@ classdef K6517b_dev < aDevice & I2V_converter_traits
             obj.enable_feedback("disable");
         end
     end
-
 
 end
 

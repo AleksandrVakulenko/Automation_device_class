@@ -23,6 +23,9 @@ classdef I2V_converter_traits < handle
     methods (Access = protected, Abstract)
         sense = set_current_sensitivity_override(obj, Level)
         [Current, Time_data, OVLD] = get_current_value_override(obj)
+    end
+
+    methods (Access = public, Abstract)
         start_of_measurement(obj)
         end_of_measurement(obj)
     end

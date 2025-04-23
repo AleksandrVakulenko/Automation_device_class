@@ -132,6 +132,16 @@ classdef K6517b_dev < aDevice & I2V_converter_traits
             Time_data = 0;
             OVLD = false;
         end
+
+        function start_of_measurement(obj)
+            obj.config("current");
+            obj.enable_feedback("enable");
+            pause(0.5);
+        end
+        
+        function end_of_measurement(obj)
+            obj.enable_feedback("disable");
+        end
     end
 
 

@@ -92,7 +92,7 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
         end
     end
 
-    
+
     methods (Access = protected)
         function sense = set_current_sensitivity_override(obj, Level)
             % FIXME: need update, bad code (test_254231)
@@ -111,6 +111,14 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
 
         function [Current, Time_data, OVLD] = get_current_value_override(obj)
             [Current, Time_data, OVLD] = obj.read_data();
+        end
+
+        function start_of_measurement(obj)
+            % nothing to do
+        end
+
+        function end_of_measurement(obj)
+            % nothing to do
         end
     end
 

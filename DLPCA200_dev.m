@@ -54,19 +54,17 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
 
     %------------ SET CMD public block -----------
     methods (Access = public)
-        function [sense, BW] = set_sensitivity(obj, Level, Range)
+        function [sense, BW] = set_sensitivity(obj, Level)
             arguments
                 obj
                 Level (1,1) double {mustBeMember(Level, ...
-                    [3, 4, 5, 6, 7, 8, 9, 10, 11])}
-                Range {mustBeMember(Range, ["H", "L"])} = "L"
+                    [3, 4, 5, 6, 7, 8, 9])}
             end
-            if Level < 4
+            Range = "H";
+            if Level == 3 || Level == 4
                 Range = "L";
             end
-            if Level > 9
-                Range = "H";
-            end
+
             if Range == "H" % convert to array number (1 to 7)
                 Level = Level - 2 - 2;
             else
@@ -97,13 +95,17 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
     
     methods (Access = protected)
         function sense = set_current_sensitivity_override(obj, Level)
+            % FIXME: need update, bad code (test_254231)
             if Level > 1e-3
                 Level = 1e-3;
             end
-            if Level < 1e-11
-                Level = 1e-11;
+            if Level < 1e-9
+                Level = 1e-9;
             end
-            Level_exp = -fix(log10(Level))
+            Level_exp = -fix(log10(Level)-0.999);
+            if Level_exp < 3
+                Level_exp = 3;
+            end
             [sense, ~] = set_sensitivity(obj, Level_exp);
         end
 

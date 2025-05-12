@@ -115,11 +115,11 @@ classdef DLPCA200_dev < aDevice & I2V_converter_traits
     end
 
     methods (Access = public) % NOTE: override
-        function start_of_measurement(obj)
+        function initiate(obj)
             % nothing to do
         end
 
-        function end_of_measurement(obj)
+        function terminate(obj)
             % nothing to do
         end
     end

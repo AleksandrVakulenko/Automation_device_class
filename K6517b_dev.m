@@ -135,13 +135,13 @@ classdef K6517b_dev < aDevice & I2V_converter_traits
     end
 
     methods (Access = public) % NOTE: override
-        function start_of_measurement(obj)
+        function initiate(obj)
             obj.config("current");
             obj.enable_feedback("enable");
             pause(0.5);
         end
         
-        function end_of_measurement(obj)
+        function terminate(obj)
             obj.enable_feedback("disable");
         end
     end

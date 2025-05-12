@@ -1,5 +1,5 @@
 
-
+% FIXME: maybe put "initiate" and "terminate" to aDevice?
 
 classdef I2V_converter_traits < handle
     
@@ -18,6 +18,8 @@ classdef I2V_converter_traits < handle
             end
             [Current, Time_data, OVLD] = obj.get_current_value_override();
         end
+    
+        
     end
     
     methods (Access = protected, Abstract)
@@ -26,8 +28,8 @@ classdef I2V_converter_traits < handle
     end
 
     methods (Access = public, Abstract)
-        start_of_measurement(obj)
-        end_of_measurement(obj)
+        initiate(obj)
+        terminate(obj)
     end
 
 end

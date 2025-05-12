@@ -16,7 +16,7 @@
 % 3) Add error check CMDs:
 %   *ESR? { j } p148
 % 4) LIAS?
-% 5) 
+% 5) Add generator traits
 
 classdef SR860_dev < aDevice
 
@@ -29,6 +29,17 @@ classdef SR860_dev < aDevice
                     25, 26, 27, 28, 29, 30])}
             end
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
+        end
+    end
+
+    methods (Access = public) % NOTE: override (not now)
+        function initiate(obj)
+            % FIXME: may be add something?
+            % nothing to do
+        end
+
+        function terminate(obj)
+            obj.set_gen_config(1e-9, 10);
         end
     end
 

@@ -1,4 +1,21 @@
 
+% TODO:
+% Ammeter props:
+% 1) Range list
+% 2) 
+% 3) 
+% 4) 
+% 5) 
+% 6) 
+% 7) 
+% 
+
+% Range props
+% 1) Sense
+% 2) BW
+% 3) 
+% 4) 
+
 % FIXME: maybe put "initiate" and "terminate" to aDevice?
 
 classdef I2V_converter_traits < handle

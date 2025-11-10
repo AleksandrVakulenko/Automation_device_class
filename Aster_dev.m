@@ -90,6 +90,31 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             obj.FB_res = Res_array(Range_num);
             obj.bandwidth = BW_array(Range_num);
         end
+
+        function Set_CAP_feedback(obj, Range)
+        arguments
+            obj
+            Range {mustBeMember(Range, ["CAP_100p", "CAP_10n", "CAP_1u", "CAP_20u"])}
+        end
+            obj.FB_opamp_select("AD8065");
+            obj.FB_1_select(Range);
+            obj.cap_short(0);
+        end
+
+        function CAP_RESET(obj)
+%             obj.Current_direction("GND");
+            pause(0.03)
+            obj.FB_opamp_connect("disable");
+            pause(0.03)
+            obj.cap_short(1);
+            pause(0.1)
+            
+            pause(0.01)
+            obj.FB_opamp_connect("enable");
+            pause(0.03)
+            obj.cap_short(0);
+%             obj.Current_direction("I2V");
+        end
     end
 
 
@@ -126,6 +151,21 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             obj.FB_opamp_select("AD8065");
             obj.FB_1_select("RES_10k");
             obj.FB_2_select("10G");
+            obj.cap_short(1);
+        end
+
+        function set_mode(obj, mode)
+        arguments
+            obj
+            mode {mustBeMember(mode, ["I2V", "LCR"])}
+        end
+            if mode == "I2V"
+                obj.init_device();
+            elseif mode == "LCR"
+                obj.Gen_direction("LCR");
+                obj.Current_direction("LCR");
+                obj.LCR_HV_direction("LCR_HC");
+            end
         end
     end
 

@@ -2,11 +2,23 @@
 
 %% Create
 clc
-Aster = Aster_dev(4);
+Aster = Aster_dev(5);
 
 %% Delete
 
 delete(Aster)
+
+%%
+
+Aster.Set_res_feedback(3);
+
+Aster.Set_CAP_feedback("CAP_100p");
+
+Aster.CAP_RESET();
+
+Aster.initiate
+
+Aster.terminate
 
 %%
 
@@ -19,6 +31,15 @@ Aster.get_bandwidth
 pause(1)
 
 end
+
+%%
+
+Aster.set_mode("I2V");
+
+%%
+
+Aster.set_mode("LCR");
+
 
 %% Read data
 

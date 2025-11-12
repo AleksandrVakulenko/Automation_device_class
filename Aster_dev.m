@@ -37,9 +37,13 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             resp = "*IDN? cmd is not supported";
         end
    
-        function delete(obj)
-            obj.terminate();
-        end
+%         function delete(obj)
+%             try
+%                 obj.terminate();
+%             catch
+%                 disp("Error in Aster d-tor");
+%             end
+%         end
     end
 
 

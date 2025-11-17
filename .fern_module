@@ -3,5 +3,6 @@ aDevice
 
 dependencies:
 Connector
+Debug_msg
 
 info:

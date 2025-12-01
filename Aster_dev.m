@@ -90,7 +90,8 @@ classdef Aster_dev < aDevice & I2V_converter_traits
                 obj.FB_2_select("1T");
             end
             Res_array = [200 10e3 1e6 100e6 10e9 1e12];
-            BW_array = [130e3 200e3 8.5e3 60 0.1 0.05]; % Hz
+%             BW_array = [130e3 200e3 8.5e3 60 0.1 0.05]; % Hz
+            BW_array = [100e3 100e3 2.8e3 68 1.0 0.05]; % Hz
             obj.FB_res = Res_array(Range_num);
             obj.bandwidth = BW_array(Range_num);
         end

@@ -24,9 +24,13 @@ classdef Aster_dev < aDevice & I2V_converter_traits
     methods (Access = public)
         function obj = Aster_dev(COM_port_N)
             arguments
-                COM_port_N {mustBeNumeric(COM_port_N)}
+                COM_port_N
             end
-            COM_port_name = string(['COM' num2str(COM_port_N)]);
+            if isnumeric(COM_port_N)
+                COM_port_name = string(['COM' num2str(COM_port_N)]);
+            else
+                COM_port_name = COM_port_N; % FIXME: bad name
+            end
             obj@aDevice(Connector_COM_USB(COM_port_name));
             pause(0.1);
             obj.init_device();

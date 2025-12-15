@@ -205,6 +205,15 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             obj.send_cmd(9);
         end
 
+        function CMD_data_stream(obj, arg)
+            % FIXME: toggle for data send;
+            % (!!! legacy CMD, will be remover in future updates)
+            if arg == true
+                % flush data
+                obj.con.read();
+            end
+            obj.send_cmd(8, arg);
+        end
 
         function FB_opamp_select(obj, opamp)
             arguments
@@ -406,7 +415,7 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             pause(0.01);
             [Time, ~, Voltage2, ~, ~, ~] = high_level_read(obj);
             Time_data = Time;
-            if abs(Voltage2) > 5
+            if any(abs(Voltage2) > 5)
                 OVLD = true;
             else
                 OVLD  = false;

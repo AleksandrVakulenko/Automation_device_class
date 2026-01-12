@@ -24,9 +24,13 @@ classdef Aster_dev < aDevice & I2V_converter_traits
     methods (Access = public)
         function obj = Aster_dev(COM_port_N)
             arguments
-                COM_port_N {mustBeNumeric(COM_port_N)}
+                COM_port_N
             end
-            COM_port_name = string(['COM' num2str(COM_port_N)]);
+            if isnumeric(COM_port_N)
+                COM_port_name = string(['COM' num2str(COM_port_N)]);
+            else
+                COM_port_name = COM_port_N; % FIXME: bad name
+            end
             obj@aDevice(Connector_COM_USB(COM_port_name));
             pause(0.1);
             obj.init_device();
@@ -201,6 +205,15 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             obj.send_cmd(9);
         end
 
+        function CMD_data_stream(obj, arg)
+            % FIXME: toggle for data send;
+            % (!!! legacy CMD, will be remover in future updates)
+            if arg == true
+                % flush data
+                obj.con.read();
+            end
+            obj.send_cmd(8, arg);
+        end
 
         function FB_opamp_select(obj, opamp)
             arguments
@@ -402,7 +415,7 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             pause(0.01);
             [Time, ~, Voltage2, ~, ~, ~] = high_level_read(obj);
             Time_data = Time;
-            if abs(Voltage2) > 5
+            if any(abs(Voltage2) > 5)
                 OVLD = true;
             else
                 OVLD  = false;

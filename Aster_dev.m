@@ -15,7 +15,10 @@
 %  2) 
 %  3)
 
-classdef Aster_dev < aDevice & I2V_converter_traits
+classdef Aster_dev < aDevice & ...
+                     I2V_converter_traits & ...
+                     Connector_board_traits
+
     properties (Access = private)
         FB_res
         bandwidth
@@ -149,6 +152,10 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             [Current, Time_data, OVLD] = obj.read_data();
             Current = -Current;
         end
+
+        function set_mode_override(obj, mode)
+            obj.set_mode(mode);
+        end
     end
 
 
@@ -179,6 +186,13 @@ classdef Aster_dev < aDevice & I2V_converter_traits
                 obj.Gen_direction("LCR");
                 obj.Current_direction("LCR");
                 obj.LCR_HV_direction("LCR_HC");
+                %
+                obj.FB_opamp_select("AD8065");
+                obj.FB_opamp_connect("disable");
+                obj.FB_1_select("RES_10k");
+                obj.FB_2_select("10G");
+                obj.cap_short(1);
+                %
             end
         end
     end

@@ -124,6 +124,11 @@ classdef Aster_dev < aDevice & I2V_converter_traits
             obj.cap_short(0);
 %             obj.Current_direction("I2V");
         end
+
+        function [Time_data, Voltage, Current, Current_OVLD] = get_CV(obj)
+            [Current, Time_data, Current_OVLD, Voltage] = obj.read_data();
+            Current = -Current;
+        end
     end
 
 
@@ -410,10 +415,10 @@ classdef Aster_dev < aDevice & I2V_converter_traits
         end
 
 
-        function [Current, Time_data, OVLD] = read_data(obj)
+        function [Current, Time_data, OVLD, Voltage1] = read_data(obj)
             obj.CMD_data_req();
             pause(0.01);
-            [Time, ~, Voltage2, ~, ~, ~] = high_level_read(obj);
+            [Time, Voltage1, Voltage2, ~, ~, ~] = high_level_read(obj);
             Time_data = Time;
             if any(abs(Voltage2) > 5)
                 OVLD = true;

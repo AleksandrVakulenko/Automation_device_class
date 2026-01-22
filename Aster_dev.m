@@ -132,6 +132,16 @@ classdef Aster_dev < aDevice & ...
             [Current, Time_data, Current_OVLD, Voltage] = obj.read_data();
             Current = -Current;
         end
+
+        function CMD_data_stream(obj, arg)
+            % FIXME: toggle for data send;
+            % (!!! legacy CMD, will be remover in future updates)
+            if arg == true
+                % flush data
+                obj.con.read();
+            end
+            obj.send_cmd(8, arg);
+        end
     end
 
 
@@ -222,16 +232,6 @@ classdef Aster_dev < aDevice & ...
         
         function CMD_data_req(obj)
             obj.send_cmd(9);
-        end
-
-        function CMD_data_stream(obj, arg)
-            % FIXME: toggle for data send;
-            % (!!! legacy CMD, will be remover in future updates)
-            if arg == true
-                % flush data
-                obj.con.read();
-            end
-            obj.send_cmd(8, arg);
         end
 
         function FB_opamp_select(obj, opamp)

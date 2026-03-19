@@ -449,19 +449,45 @@ classdef Aster_dev < aDevice & ...
             Current = Voltage2/obj.FB_res;
         end
 
+        
         function [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
                 Relay_state_byte, Device_state_byte] = debug_read(obj)
 
-            number_of_bytes = 16;
+            number_of_bytes = 16; % NOTE: device const
+            wait_time = 0.1;  % NOTE: const
+            max_num_of_try = 1; % NOTE: const
+
             Data = obj.con.read();
-            table = reshape(Data, [number_of_bytes numel(Data)/number_of_bytes]);
-            if ~isempty(table)
+            k = 0;
+            while numel(Data) == 0 || mod(numel(Data), number_of_bytes) ~= 0
+                k = k + 1;
+                if k == max_num_of_try + 1
+                    break
+                end
+                pause(wait_time);
+                Data = [Data obj.con.read()];
+            end
+
+            if numel(Data) > 0 && ...
+                    mod(numel(Data), number_of_bytes) ~= 0
+                sz = floor(numel(Data)/number_of_bytes)*number_of_bytes;
+                % FIXME: add stashing here
+                Data = Data(1:sz);
+            end
+
+            if numel(Data) >= number_of_bytes
+                table = reshape(Data, [number_of_bytes numel(Data)/number_of_bytes]);
                 [Data_table, CMD_table] = split_tables(table);
                 [Device_state_byte, Relay_state_byte, Full_time_stamp, ...
-                ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table);
+                    ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table);
             else
-                error('no data avilable') %FIXME: add error handler
+                Full_time_stamp = [];
+                ADC_1_voltage = [];
+                ADC_2_voltage = [];
+                Relay_state_byte = [];
+                Device_state_byte = [];
             end
+
         end
 
         function [Time, Voltage1, Voltage2, Unit, Relay_state, ...
@@ -474,9 +500,9 @@ classdef Aster_dev < aDevice & ...
                 Relay_state = -1;
                 Unit = -1;
                 multiplier = -1;
-                Time = double(Full_time_stamp)*100e-6; % s
-                Voltage1 = ADC_2_voltage; % V
-                Voltage2 = ADC_1_voltage;
+                Time = double(Full_time_stamp)*100e-6; % s % FIXME: magic constant
+                Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2?
+                Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1?
 %                 Device_state_byte = Device_state_byte;
             catch e
                 rethrow(e);

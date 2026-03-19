@@ -129,7 +129,8 @@ classdef Aster_dev < aDevice & ...
         end
 
         function [Time_data, Voltage, Current, Current_OVLD] = get_CV(obj)
-            [Current, Time_data, Current_OVLD, Voltage] = obj.read_data();
+            req = false;
+            [Current, Time_data, Current_OVLD, Voltage] = obj.read_data(req);
             Current = -Current;
         end
 
@@ -429,9 +430,15 @@ classdef Aster_dev < aDevice & ...
         end
 
 
-        function [Current, Time_data, OVLD, Voltage1] = read_data(obj)
-            obj.CMD_data_req();
-            pause(0.01);
+        function [Current, Time_data, OVLD, Voltage1] = read_data(obj, req)
+            arguments
+                obj
+                req = true
+            end
+            if req
+                obj.CMD_data_req();
+                pause(0.01);
+            end
             [Time, Voltage1, Voltage2, ~, ~, ~] = high_level_read(obj);
             Time_data = Time;
             if any(abs(Voltage2) > 5)

@@ -134,6 +134,11 @@ classdef Aster_dev < aDevice & ...
             Current = -Current;
         end
 
+        function [Time_data, Voltage1, Voltage2, Scale] = get_VV(obj)
+            req = false;
+            [~, Time_data, ~, Voltage1, Voltage2, Scale] = obj.read_data(req);
+        end
+
         function CMD_data_stream(obj, arg)
             % FIXME: toggle for data send;
             % (!!! legacy CMD, will be remover in future updates)
@@ -430,7 +435,8 @@ classdef Aster_dev < aDevice & ...
         end
 
 
-        function [Current, Time_data, OVLD, Voltage1] = read_data(obj, req)
+        function [Current, Time_data, OVLD, Voltage1, Voltage2, Scale] = ...
+                read_data(obj, req)
             arguments
                 obj
                 req = true
@@ -447,6 +453,7 @@ classdef Aster_dev < aDevice & ...
                 OVLD  = false;
             end
             Current = Voltage2/obj.FB_res;
+            Scale = 1/obj.FB_res;
         end
 
 

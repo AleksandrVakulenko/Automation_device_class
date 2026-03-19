@@ -449,7 +449,7 @@ classdef Aster_dev < aDevice & ...
             Current = Voltage2/obj.FB_res;
         end
 
-        
+
         function [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
                 Relay_state_byte, Device_state_byte] = debug_read(obj)
 
@@ -492,21 +492,18 @@ classdef Aster_dev < aDevice & ...
 
         function [Time, Voltage1, Voltage2, Unit, Relay_state, ...
                 Device_state_byte] = high_level_read(obj)
-            try
-                [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
-                    Relay_state_byte, Device_state_byte] = obj.debug_read;
-                % FIXME: add filtering
-%                 [Relay_state, Unit, multiplier] = relay_byte_parse(Relay_state_byte);
-                Relay_state = -1;
-                Unit = -1;
-                multiplier = -1;
-                Time = double(Full_time_stamp)*100e-6; % s % FIXME: magic constant
-                Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2?
-                Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1?
-%                 Device_state_byte = Device_state_byte;
-            catch e
-                rethrow(e);
-            end
+
+            [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
+                Relay_state_byte, Device_state_byte] = obj.debug_read;
+            % FIXME: add filtering
+            % [Relay_state, Unit, multiplier] = relay_byte_parse(Relay_state_byte);
+            Relay_state = -1;
+            Unit = -1;
+            multiplier = -1;
+            Time = double(Full_time_stamp)*100e-6; % s % FIXME: magic constant
+            Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2?
+            Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1?
+            % Device_state_byte = Device_state_byte;
         end
 
     end

@@ -34,7 +34,12 @@ classdef Aster_dev < aDevice & ...
             else
                 COM_port_name = COM_port_N; % FIXME: bad name
             end
-            obj@aDevice(Connector_COM_USB(COM_port_name));
+            try % NOTE: sometimes it does not connect
+                obj@aDevice(Connector_COM_USB(COM_port_name));
+            catch
+                pause(0.15);
+                obj@aDevice(Connector_COM_USB(COM_port_name));
+            end
             pause(0.1);
             obj.init_device();
         end

@@ -194,21 +194,22 @@ classdef Aster_dev < aDevice & ...
         function set_mode(obj, mode)
         arguments
             obj
-            mode {mustBeMember(mode, ["I2V", "LCR"])}
+            mode {mustBeMember(mode, ["I2V", "LCR", "Bypass"])}
         end
-            if mode == "I2V"
+            if mode == "I2V" % NOTE: lock-in
                 obj.init_device();
+            elseif mode == "Bypass"
+                obj.Gen_direction("External");
+                obj.Current_direction("Redirection");
+                obj.LCR_HV_direction("LCR_HC");
+                obj.I2V_disarm();
             elseif mode == "LCR"
                 obj.Gen_direction("LCR");
                 obj.Current_direction("LCR");
                 obj.LCR_HV_direction("LCR_HC");
-                %
-                obj.FB_opamp_select("AD8065");
-                obj.FB_opamp_connect("disable");
-                obj.FB_1_select("RES_10k");
-                obj.FB_2_select("10G");
-                obj.cap_short(1);
-                %
+                obj.I2V_disarm();
+            else
+                error('unreachable')
             end
         end
     end
@@ -238,6 +239,14 @@ classdef Aster_dev < aDevice & ...
         
         function CMD_data_req(obj)
             obj.send_cmd(9);
+        end
+
+        function I2V_disarm(obj)
+            obj.FB_opamp_select("AD8065");
+            obj.FB_opamp_connect("disable");
+            obj.FB_1_select("RES_10k");
+            obj.FB_2_select("10G");
+            obj.cap_short(1);
         end
 
         function FB_opamp_select(obj, opamp)

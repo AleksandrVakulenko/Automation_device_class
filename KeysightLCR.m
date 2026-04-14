@@ -39,19 +39,19 @@ classdef KeysightLCR < handle
         end
 
 
-        function [cap_re, tan_d] = get_res(obj)
+        function [res_re, res_im] = get_res(obj)
             response = obj.query(obj.visa_dev, ':FETCh:IMPedance:CORrected?');
-            data = sscanf(response, '%f,%f');
-            cap_re = data(1);
-            tan_d = data(2);
-        end
-
-
-        function [res_re, res_im] = get_cap(obj)
-            response = obj.query(obj.visa_dev, ':FETCh:IMPedance:FORmatted?');
             data = sscanf(response, '%f,%f');
             res_re = data(1);
             res_im = data(2);
+        end
+
+
+        function [cap_re, tan_d] = get_cap(obj)
+            response = obj.query(obj.visa_dev, ':FETCh:IMPedance:FORmatted?');
+            data = sscanf(response, '%f,%f');
+            cap_re = data(1);
+            tan_d = data(2);
         end
 
 

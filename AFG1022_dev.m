@@ -13,7 +13,7 @@ classdef AFG1022_dev < handle
             arguments
                 Serial_number = []
             end
-            [vias_adr, SN] = find_visa_dev_by_name("AFG1022", Serial_number);
+            [vias_adr, SN] = adev_utils.find_visa_dev_by_name("AFG1022", Serial_number);
             obj.visa_dev = visa('ni',vias_adr);
         end
         
@@ -124,61 +124,6 @@ classdef AFG1022_dev < handle
         end
     end
     
-end
-
-
-
-
-
-
-
-
-
-function [vias_adr, SerialNumber] = find_visa_dev_by_name(name, SerialNumber)
-arguments
-    name string
-    SerialNumber = [];
-end
-    dev_table = visadevlist;
-    ind = find(dev_table.Model == name);
-
-    if ~isempty(ind)
-        if ~isempty(SerialNumber)
-            SerialNumber = string(SerialNumber);
-            ind2 = find(dev_table.SerialNumber == SerialNumber);
-            if any(ind == ind2)
-                vias_adr = dev_table.ResourceName(ind2);
-            else
-                Str = get_dev_list_str(dev_table);
-                error(['No device "' char(name) '"' ' with SN:' ...
-                    char(SerialNumber) ' in list: ' newline Str]);
-            end
-        else % no SERIAL NUMBER is provided:
-            if numel(ind) == 1
-                vias_adr = dev_table.ResourceName(ind);
-            else
-                Str = get_dev_list_str(dev_table);
-                error(['the choice of device ' '"' char(name) '"' ...
-                    ' is ambiguous:' newline Str]);
-            end
-        end
-    else
-        Str = get_dev_list_str(dev_table);
-        error(['No device "' char(name) '" in list: ' newline Str]);
-    end
-
-end
-
-
-
-function Str = get_dev_list_str(dev_table)
-Str = '';
-for i = 1:size(dev_table, 1)
-    Str = [Str num2str(i) '| ' ...
-           char(dev_table{i, "Vendor"}) ' | ' ...
-           char(dev_table{i, "Model"})  ' | ' ...
-           char(dev_table{i, "SerialNumber"}) newline];
-end
 end
 
 

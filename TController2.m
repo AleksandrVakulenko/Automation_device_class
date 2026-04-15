@@ -160,7 +160,7 @@ classdef TController2 < handle
         COM_port_str = '';
         Serial_obj = [];
         Wait_data_timeout = 1; %s
-        number_of_bytes = 28;
+        number_of_bytes = 32;
         connected_flag = 0;
     end
 

@@ -10,6 +10,11 @@
 % 
 % ------------
 
+% TODO:
+% 1) find programming manual
+% 2) add more functions
+% 3) add second channel
+
 classdef FG120_dev < aDevice
 
     methods (Access = public)

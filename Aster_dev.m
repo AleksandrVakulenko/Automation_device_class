@@ -143,8 +143,7 @@ classdef Aster_dev < aDevice & ...
             % FIXME: toggle for data send;
             % (!!! legacy CMD, will be remover in future updates)
             if arg == true
-                % flush data
-                obj.con.read();
+                obj.con.flush();
             end
             obj.send_cmd(8, arg);
         end
@@ -473,7 +472,10 @@ classdef Aster_dev < aDevice & ...
             wait_time = 0.1;  % NOTE: const
             max_num_of_try = 1; % NOTE: const
 
+            % FIXME: wait for testing (replace in future update) FX431
             Data = obj.con.read();
+%             Data = obj.con.read(number_of_bytes, 'multiple')
+
             k = 0;
             while numel(Data) == 0 || mod(numel(Data), number_of_bytes) ~= 0
                 k = k + 1;
@@ -481,7 +483,7 @@ classdef Aster_dev < aDevice & ...
                     break
                 end
                 pause(wait_time);
-                Data = [Data obj.con.read()];
+                Data = [Data obj.con.read()]; % FIXME: for FX431
             end
 
             if numel(Data) > 0 && ...

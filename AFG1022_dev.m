@@ -1,5 +1,19 @@
+% Date: 2026.04.20
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: Tektronix
+% Model: AFG1022
+% Description: Function generator
+% 
+% ------------
 
-% FIXME: place to Fern:aDevice
+% TODO:
+% 1) move visa functions from AFG1022 and adev_utils to Fern::Connector
+% 2) add more functions
+% 3) add second channel
 
 classdef AFG1022_dev < handle
     properties (Access = private)

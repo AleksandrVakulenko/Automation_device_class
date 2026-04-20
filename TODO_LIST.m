@@ -1,1 +1,0 @@
-% 1) move visa functions from AFG1022 and adev_utils to Fern::Connector

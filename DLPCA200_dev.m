@@ -3,6 +3,9 @@
 % Licensed after GNU GPL v3
 %
 % ----INFO----:
+%
+% Legacy device
+%
 % <Class for instrument control>
 % Manufacturer: Femto
 % Model: DLPCA-200

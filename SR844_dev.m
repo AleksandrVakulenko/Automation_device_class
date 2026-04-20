@@ -255,44 +255,43 @@ arguments
     Level (1,1) double
     mode {mustBeMember(mode, "voltage")} = "voltage"
 end
-Sens_array_V = [1, 0.3, 0.1, 30e-3, 10e-3, 3e-3, 1e-3, 300e-6, 100e-6, ...
-    30e-6, 10e-6, 3e-6, 1e-6, 300e-9, 100e-9];
-
-Sens_array = Sens_array_V;
-Limit = 1; % V
-
-if Level > Limit*1.1
-    warning("Level of sensitivity is above maximum")
-    Level = Limit;
-end
-ind = find(Sens_array<Level, 1);
-if isempty(ind)
-    ind = numel(Sens_array);
-elseif ind > 1
+    Sens_array_V = [1, 0.3, 0.1, 30e-3, 10e-3, 3e-3, 1e-3, 300e-6, 100e-6, ...
+        30e-6, 10e-6, 3e-6, 1e-6, 300e-9, 100e-9];
+    
+    Sens_array = Sens_array_V;
+    Limit = 1; % V
+    
+    if Level > Limit*1.1
+        warning("Level of sensitivity is above maximum")
+        Level = Limit;
+    end
+    ind = find(Sens_array<Level, 1);
+    if isempty(ind)
+        ind = numel(Sens_array);
+    elseif ind > 1
+        ind = ind - 1;
+    end
+    sense = Sens_array(ind);
     ind = ind - 1;
-end
-sense = Sens_array(ind);
-ind = ind - 1;
 end
 
 function [time_const, ind] = find_best_time_constant(time_const)
-% model SR844
-tc_array = [100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
-    30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
-
-Min_tc = tc_array(1);
-Max_tc = tc_array(end);
-if time_const < Min_tc
-    time_const = Min_tc;
-end
-if time_const > Max_tc
-    time_const = Max_tc
-end
-
-[~, ind] = min(abs(tc_array-time_const));
-time_const = tc_array(ind);
-ind = ind - 1;
-
+    % model SR844
+    tc_array = [100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+        30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
+    
+    Min_tc = tc_array(1);
+    Max_tc = tc_array(end);
+    if time_const < Min_tc
+        time_const = Min_tc;
+    end
+    if time_const > Max_tc
+        time_const = Max_tc
+    end
+    
+    [~, ind] = min(abs(tc_array-time_const));
+    time_const = tc_array(ind);
+    ind = ind - 1;
 end
 
 

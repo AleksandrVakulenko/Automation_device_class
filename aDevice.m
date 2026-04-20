@@ -48,8 +48,16 @@ classdef aDevice < handle
     end
 
     methods (Access = protected)
-        function Data = read(obj)
-            Data = obj.con.read();
+
+        % log wrapper for read
+        function Data = read_and_log(obj, num_of_bytes, mode)
+            arguments
+                obj
+                num_of_bytes (1,1) double {mustBeInteger(num_of_bytes)} = []
+                mode {mustBeMember(mode, ["multiple", "exact"])} = "multiple";
+            end
+            Data = obj.con.read(num_of_bytes, mode);
+            DEBUG_RESP_LOG(obj, char(Data))
         end
 
         % log wrapper for send

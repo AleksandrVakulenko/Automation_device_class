@@ -1,4 +1,18 @@
+% Date: 2026.04.20
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: Keysight
+% Model: E4980
+% Description: LCR meter
+% 
+% ------------
 
+% TODO:
+% 1) rename class
+% 2) read about ":FETCh:IMPedance:FORmatted?" and ":FETCh:IMPedance:CORrected?"
 
 classdef KeysightLCR < handle
     %--------------------------------PUBLIC--------------------------------

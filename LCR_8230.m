@@ -11,7 +11,7 @@
 % ------------
 
 % TODO:
-% 1)
+% 1) add more functions
 
 classdef LCR_8230 < aDevice
 

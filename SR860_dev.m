@@ -443,74 +443,75 @@ end
 
 % FIXME: delete unsued func
 function out = set_argout(n_out, varargin)
-n_in = nargin-1;
-if n_out > 0
-    if n_in <= n_out
-        for i = 1:n_in
-            out{i} = varargin{i};
+    n_in = nargin-1;
+    if n_out > 0
+        if n_in <= n_out
+            for i = 1:n_in
+                out{i} = varargin{i};
+            end
+            for i = n_in+1:n_out
+                out{i} = [];
+            end
+        else % n_in > n_out
+            for i = 1:n_out
+                out{i} = varargin{i};
+            end
         end
-        for i = n_in+1:n_out
-            out{i} = [];
-        end
-    else % n_in > n_out
-        for i = 1:n_out
-            out{i} = varargin{i};
-        end
+    else
+        out = {};
     end
-else
-    out = {};
 end
-end
+
 
 function [sense, ind] = find_best_sensitivity(Level, mode)
 arguments
     Level (1,1) double
     mode {mustBeMember(mode, ["voltage", "current"])}
 end
-Sens_array_V = [1, 500e-3, 200e-3, 100e-3, 50e-3, 20e-3, ...
-    10e-3, 5e-3, 2e-3, 1e-3, 500e-6, 200e-6, 100e-6, 50e-6, ...
-    20e-6, 10e-6, 5e-6, 2e-6, 1e-6, 500e-9, 200e-9, 100e-9, ...
-    50e-9, 20e-9, 10e-9, 5e-9, 2e-9, 1e-9];
-Sens_array_I = Sens_array_V/1e6;
-switch mode
-    case "voltage"
-        Sens_array = Sens_array_V;
-        Limit = 1; % V
-    case "current"
-        Sens_array = Sens_array_I;
-        Limit = 1e-6; % A
-end
-if Level > Limit*1.1
-    warning("Level of sensitivity is above maximum")
-    Level = Limit;
-end
-ind = find(Sens_array<Level, 1);
-if isempty(ind)
-    ind = numel(Sens_array);
-elseif ind > 1
+    Sens_array_V = [1, 500e-3, 200e-3, 100e-3, 50e-3, 20e-3, ...
+        10e-3, 5e-3, 2e-3, 1e-3, 500e-6, 200e-6, 100e-6, 50e-6, ...
+        20e-6, 10e-6, 5e-6, 2e-6, 1e-6, 500e-9, 200e-9, 100e-9, ...
+        50e-9, 20e-9, 10e-9, 5e-9, 2e-9, 1e-9];
+    Sens_array_I = Sens_array_V/1e6;
+    switch mode
+        case "voltage"
+            Sens_array = Sens_array_V;
+            Limit = 1; % V
+        case "current"
+            Sens_array = Sens_array_I;
+            Limit = 1e-6; % A
+    end
+    if Level > Limit*1.1
+        warning("Level of sensitivity is above maximum")
+        Level = Limit;
+    end
+    ind = find(Sens_array<Level, 1);
+    if isempty(ind)
+        ind = numel(Sens_array);
+    elseif ind > 1
+        ind = ind - 1;
+    end
+    sense = Sens_array(ind);
     ind = ind - 1;
 end
-sense = Sens_array(ind);
-ind = ind - 1;
-end
+
 
 function [time_const, ind] = find_best_time_constant(time_const)
-tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
-    30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
-
-Min_tc = tc_array(1);
-Max_tc = tc_array(end);
-if time_const < Min_tc
-    time_const = Min_tc;
-end
-if time_const > Max_tc
-    time_const = Max_tc
-end
-
-[~, ind] = min(abs(tc_array-time_const));
-time_const = tc_array(ind);
-ind = ind - 1;
-
+    tc_array = [1e-6, 3e-6, 10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3, ...
+        30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10e3, 30e3];
+    
+    Min_tc = tc_array(1);
+    Max_tc = tc_array(end);
+    if time_const < Min_tc
+        time_const = Min_tc;
+    end
+    if time_const > Max_tc
+        time_const = Max_tc;
+    end
+    
+    [~, ind] = min(abs(tc_array-time_const));
+    time_const = tc_array(ind);
+    ind = ind - 1;
 end
 
 

@@ -47,7 +47,12 @@ classdef aDevice < handle
         end
     end
 
-    methods (Access = protected) % log wrapper for send/query
+    methods (Access = protected)
+        function Data = read(obj)
+            Data = obj.con.read();
+        end
+
+        % log wrapper for send
         function send_and_log(obj, CMD)
             arguments
                 obj
@@ -57,6 +62,7 @@ classdef aDevice < handle
             obj.con.send(CMD);
         end
 
+        % log wrapper for query
         function resp = query_and_log(obj, CMD)
             arguments
                 obj

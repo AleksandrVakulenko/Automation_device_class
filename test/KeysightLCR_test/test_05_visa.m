@@ -17,7 +17,7 @@ Fern.load('aDevice');
 
 clc
 
-[vias_adr, SN] = adev_utils.find_visa_dev_by_name("E4980AL", Serial_number);
+[vias_adr, SN] = con_utils.find_visa_dev_by_name("E4980AL", Serial_number);
 
 if vias_adr ~= ""
     

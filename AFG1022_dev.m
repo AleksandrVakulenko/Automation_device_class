@@ -27,7 +27,7 @@ classdef AFG1022_dev < handle
             arguments
                 Serial_number = []
             end
-            [vias_adr, SN] = adev_utils.find_visa_dev_by_name("AFG1022", Serial_number);
+            [vias_adr, SN] = con_utils.find_visa_dev_by_name("AFG1022", Serial_number);
             obj.visa_dev = visa('ni',vias_adr);
         end
         

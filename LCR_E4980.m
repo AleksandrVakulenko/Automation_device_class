@@ -10,9 +10,6 @@
 % 
 % ------------
 
-% TODO:
-% 1) rename class
-% 2) read about ":FETCh:IMPedance:FORmatted?" and ":FETCh:IMPedance:CORrected?"
 
 classdef LCR_E4980 < handle
     %--------------------------------PUBLIC--------------------------------
@@ -61,13 +58,51 @@ classdef LCR_E4980 < handle
         end
 
 
-        function [cap_re, tan_d] = get_cap(obj)
-            response = obj.query(':FETCh:IMPedance:FORmatted?');
+        function [cap_re, tan_d] = get_cap(obj, mode)
+            arguments
+                obj
+                mode {mustBeMember(mode, ["series", "parallel"])} = "parallel"
+            end
+            if mode == "series"
+                new_mode = "Cs-D";
+            else
+                new_mode = "Cp-D";
+            end
+            prev_mode = obj.get_measurment_function();
+            if string(prev_mode) ~= string(mode2cmd(new_mode))
+                obj.set_measurment_function(new_mode);
+                response = obj.query(':FETCh:IMPedance:FORmatted?');
+                CMD = [':FUNCtion:IMPedance:TYPE ' char(prev_mode)];
+                obj.send(CMD);
+                disp('NYAN!')
+            else
+                response = obj.query(':FETCh:IMPedance:FORmatted?');
+            end
+            
             data = sscanf(response, '%f,%f');
             cap_re = data(1);
             tan_d = data(2);
         end
 
+
+        function set_measurment_function(obj, mode)
+            arguments
+                obj
+                mode {mustBeMember(mode, ["Cp-D", "Cp-Q", "Cp-G", "Cp-Rp", ...
+                    "Cs-D", "Cs-Q", "Cs-Rs", "Lp-D", "Lp-Q", "Lp-G", ...
+                    "Lp-Rp", "Ls-D", "Ls-Q", "Ls-Rs", "R-X", "Z-thd", ...
+                    "Z-thr", "G-B", "Y-thd", "Y-thr", "Vdc-Idc", ...
+                    "Lp-Rdc", "Ls-Rdc"])}
+            end
+            CMD_part = mode2cmd(mode);
+            CMD = [':FUNCtion:IMPedance:TYPE ' char(CMD_part)];
+            obj.send(CMD);
+        end
+
+        function mode = get_measurment_function(obj)
+            resp = obj.query(':FUNCtion:IMPedance?');
+            mode = strtrim(resp);
+        end
 
         function set_speed(obj, arg, count)
             count = uint8(count);
@@ -111,6 +146,113 @@ classdef LCR_E4980 < handle
     end
     
 end
+
+
+%NOTE:
+% list of functions
+% CPD   -  "Cp-D"
+% CPQ   -  "Cp-Q"
+% CPG   -  "Cp-G"
+% CPRP  -  "Cp-Rp"
+
+% CSD   -  "Cs-D"
+% CSQ   -  "Cs-Q"
+% CSRS  -  "Cs-Rs"
+% LPD   -  "Lp-D"
+% LPQ   -  "Lp-Q"
+% LPG   -  "Lp-G"
+% LPRP  -  "Lp-Rp"
+% LSD   -  "Ls-D"
+% LSQ   -  "Ls-Q"
+% LSRS  -  "Ls-Rs"
+% RX    -  "R-X"
+% ZTD   -  "Z-thd"
+% ZTR   -  "Z-thr"
+% GB    -  "G-B"
+% YTD   -  "Y-thd"
+% YTR   -  "Y-thr"
+% VDID  -  "Vdc-Idc"
+
+% LPRD  -  "Lp-Rdc" *1
+% LSRD  -  "Ls-Rdc" *1
+%
+% *1: This can be set only when option 001, 030, 050, 100 or 200 is installed.
+
+
+function CMD = mode2cmd(mode)
+arguments
+    mode {mustBeMember(mode, ["Cp-D", "Cp-Q", "Cp-G", "Cp-Rp", "Cs-D", ...
+        "Cs-Q", "Cs-Rs", "Lp-D", "Lp-Q", "Lp-G", "Lp-Rp", "Ls-D", "Ls-Q", ...
+        "Ls-Rs", "R-X", "Z-thd", "Z-thr", "G-B", "Y-thd", "Y-thr", ...
+        "Vdc-Idc", "Lp-Rdc", "Ls-Rdc"])}
+end
+
+switch mode
+    case "Cp-D"
+        CMD = "CPD";
+    case "Cp-Q"
+        CMD = "CPQ";
+    case "Cp-G"
+        CMD = "CPG";
+    case "Cp-Rp"
+        CMD = "CPRP";
+    case "Cs-D"
+        CMD = "CSD";
+    case "Cs-Q"
+        CMD = "CSQ";
+    case "Cs-Rs"
+        CMD = "CSRS";
+    case "Lp-D"
+        CMD = "LPD";
+    case "Lp-Q"
+        CMD = "LPQ";
+    case "Lp-G"
+        CMD = "LPG";
+    case "Lp-Rp"
+        CMD = "LPRP";
+    case "Ls-D"
+        CMD = "LSD";
+    case "Ls-Q"
+        CMD = "LSQ";
+    case "Ls-Rs"
+        CMD = "LSRS";
+    case "R-X"
+        CMD = "RX";
+    case "Z-thd"
+        CMD = "ZTD";
+    case "Z-thr"
+        CMD = "ZTR";
+    case "G-B"
+        CMD = "GB";
+    case "Y-thd"
+        CMD = "YTD";
+    case "Y-thr"
+        CMD = "YTR";
+    case "Vdc-Idc"
+        CMD = "VDID";
+
+    case "Lp-Rdc"
+        CMD = "LPRD";
+    case "Ls-Rdc"
+        CMD = "LSRD";
+    otherwise
+        error('unreachable')
+end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -14,10 +14,10 @@
 % 1) rename class
 % 2) read about ":FETCh:IMPedance:FORmatted?" and ":FETCh:IMPedance:CORrected?"
 
-classdef KeysightLCR < handle
+classdef LCR_E4980 < handle
     %--------------------------------PUBLIC--------------------------------
     methods (Access = public)
-        function obj = KeysightLCR(Serial_number)
+        function obj = LCR_E4980(Serial_number)
             arguments
                 Serial_number = []
             end

@@ -7,10 +7,15 @@
 % aDevice (handle) is an abstract class for wraping any automation
 % and measurement device.
 %
-% Real devices are maintaned by inherited subclasses.
+% 1) Real devices are maintaned by inherited subclasses.
 %
-% 1) Any subclass builds itself by obj@aDevice constructor with
+% 2) Any subclass builds itself by obj@aDevice constructor with
 % any type of connector.
+% 
+% 3) The constructor of the aDevice class takes single argument of some 
+% Connector type.
+% 
+% 
 % ------------
 
 % TODO:
@@ -28,9 +33,19 @@ classdef aDevice < handle
     methods (Access = public)
         function obj = aDevice(connector)
             arguments
-                connector Connector;
+                connector (1,1) Connector;
             end
             obj.con = connector;
+            % NOTE: under construction:
+%             if isa(connector, "Connector")
+%                 obj.con = connector;
+%             elseif isstring(connector) || ischar(connector) % NOTE: experimental
+%                 connector = char(connector);
+%                 error('unfinished code')
+%             else
+%                 error(['aDevice first argument must be of the following type:' ...
+%                     newline '1) Connector' newline '2) string of char'])
+%             end
         end
     end
 
@@ -53,7 +68,7 @@ classdef aDevice < handle
         function Data = read_and_log(obj, num_of_bytes, mode)
             arguments
                 obj
-                num_of_bytes (1,1) double {mustBeInteger(num_of_bytes)} = []
+                num_of_bytes double {mustBeInteger(num_of_bytes)} = []
                 mode {mustBeMember(mode, ["multiple", "exact"])} = "multiple";
             end
             Data = obj.con.read(num_of_bytes, mode);

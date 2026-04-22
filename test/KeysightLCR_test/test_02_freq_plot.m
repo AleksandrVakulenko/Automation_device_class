@@ -9,10 +9,12 @@ figure('Position', [448   237   771   820])
 subplot(2, 1, 1)
 subplot(2, 1, 2)
 
-freq_list = 10.^linspace(log10(50), log10(300e3), 200);
+freq_list = 10.^linspace(log10(20), log10(300e3), 30);
 
-LCR_dev = KeysightLCR();
-LCR_dev.set_speed('m', 1);
+tic
+LCR_dev = LCR_E4980AL();
+toc
+LCR_dev.set_speed('l', 8);
 
 freq_arr = [];
 Cap_arr = [];

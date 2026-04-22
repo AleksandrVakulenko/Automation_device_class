@@ -10,6 +10,9 @@
 % 
 % ------------
 
+% TODO:
+% 1) add option: response timeout and how many times it could be remeasured
+% 
 
 classdef LCR_E4980AL < aDevice
     properties(Access = private)
@@ -27,7 +30,7 @@ classdef LCR_E4980AL < aDevice
             if isempty(vias_adr) % FIXME: is it enought? need validation
                 error('connection error');
             end
-            obj@aDevice(Connector_VISA(vias_adr));
+            obj@aDevice(Connector_VISA(vias_adr, 'timeout', 10));
             obj.Serial_number = SN;
         end
     
@@ -51,7 +54,13 @@ classdef LCR_E4980AL < aDevice
             % NOTE: freq limit for model E4980AL
             arguments
                 obj
-                freq_in {mustBeInRange(freq_in, 20, 300000, "inclusive")}
+                freq_in {mustBeInRange(freq_in, 19.9, 300001, "inclusive")}
+            end
+            if freq_in < 20
+                freq_in = 20;
+            end
+            if freq_in > 300e3
+                freq_in = 300e3;
             end
             obj.send_and_log([':FREQuency:CW ' num2str(freq_in)]);
             response = obj.query_and_log(':FREQuency:CW?');
@@ -60,17 +69,11 @@ classdef LCR_E4980AL < aDevice
         end
 
         function [A, B] = get_readings(obj)
-            response = obj.query_and_log(':FETCh:IMPedance:FORmatted?');
-            data = sscanf(response, '%f,%f');
-            A = data(1);
-            B = data(2);
+            [A, B] = obj.get_query_AB(':FETCh:IMPedance:FORmatted?');
         end
 
         function [res_re, res_im] = get_res(obj)
-            response = obj.query_and_log(':FETCh:IMPedance:CORrected?');
-            data = sscanf(response, '%f,%f');
-            res_re = data(1);
-            res_im = data(2);
+            [res_re, res_im] = obj.get_query_AB(':FETCh:IMPedance:CORrected?');
         end
 
 
@@ -87,16 +90,12 @@ classdef LCR_E4980AL < aDevice
             prev_mode = obj.get_measurment_function();
             if string(prev_mode) ~= string(mode2cmd(new_mode))
                 obj.set_measurment_function(new_mode);
-                response = obj.query_and_log(':FETCh:IMPedance:FORmatted?');
+                [cap_re, tan_d] = obj.get_query_AB(':FETCh:IMPedance:FORmatted?');
                 CMD = [':FUNCtion:IMPedance:TYPE ' char(prev_mode)];
                 obj.send_and_log(CMD);
             else
-                response = obj.query_and_log(':FETCh:IMPedance:FORmatted?');
+                [cap_re, tan_d] = obj.get_query_AB(':FETCh:IMPedance:FORmatted?');
             end
-            
-            data = sscanf(response, '%f,%f');
-            cap_re = data(1);
-            tan_d = data(2);
         end
 
 
@@ -112,10 +111,11 @@ classdef LCR_E4980AL < aDevice
             CMD_part = mode2cmd(mode);
             CMD = [':FUNCtion:IMPedance:TYPE ' char(CMD_part)];
             obj.send_and_log(CMD);
+            pause(0.25)
         end
 
         function mode = get_measurment_function(obj)
-            resp = obj.query_and_log(':FUNCtion:IMPedance?');
+            resp = obj.query_and_log(':FUNCtion:IMPedance?', "fast");
             mode = strtrim(resp);
         end
 
@@ -151,9 +151,24 @@ classdef LCR_E4980AL < aDevice
             obj.send_and_log(CMD);
         end
 
-
     end
     
+
+    methods (Access = private)
+        function [A, B] = get_query_AB(obj, CMD)
+            response = obj.query_and_log(CMD, "fast");
+            response = char(strtrim(response));
+            if ~isempty(response)
+                data = sscanf(response, '%f,%f');
+                A = data(1);
+                B = data(2);
+            else
+                error('Device does not response')
+            end
+        end
+
+    end
+
 end
 
 

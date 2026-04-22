@@ -3,11 +3,10 @@
 clc
 
 
-LCR_dev = KeysightLCR();
+LCR_dev = LCR_E4980AL();
 
 err = [];
 try
-
     LCR_dev.set_freq(1234); % Hz
     LCR_dev.set_volt(0.25); % V
     LCR_dev.set_speed('m', 8); % 

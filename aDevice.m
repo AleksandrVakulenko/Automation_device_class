@@ -85,14 +85,15 @@ classdef aDevice < handle
         end
 
         % log wrapper for query
-        function resp = query_and_log(obj, CMD)
+        function resp = query_and_log(obj, CMD, Delay)
             arguments
                 obj
                 CMD (1,1) string {mustBeNonempty(CMD)}
+                Delay {mustBeMember(Delay, ["norm", "fast", "no delay"])} = "fast"
             end
             obj.DEBUG_CMD_LOG(CMD);
             %FIXME: speed settings!
-            resp = obj.con.query(CMD, "fast");
+            resp = obj.con.query(CMD, Delay);
             obj.DEBUG_RESP_LOG(resp);
         end
     end

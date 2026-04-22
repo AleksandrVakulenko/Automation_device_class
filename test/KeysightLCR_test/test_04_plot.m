@@ -1,7 +1,7 @@
 
 clc
 
-
+Fast = true;
 
 
 figure('Position', [448   237   771   820])
@@ -9,10 +9,16 @@ subplot(2, 1, 1)
 subplot(2, 1, 2)
 
 
-dev = KeysightLCR();
-dev.set_speed('s', 2);
+dev = LCR_E4980AL();
+if Fast
+    dev.set_freq(300000);
+    dev.set_speed("short", 1);
+else
+    dev.set_freq(20);
+    dev.set_speed("long", 5);
+end
 
-Period = 60; % s
+Period = 10; % s
 Time_arr = [];
 Cap_arr = [];
 D_arr = [];

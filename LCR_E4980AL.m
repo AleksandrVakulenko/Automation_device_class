@@ -11,10 +11,10 @@
 % ------------
 
 
-classdef LCR_E4980 < handle
+classdef LCR_E4980AL < handle
     %--------------------------------PUBLIC--------------------------------
     methods (Access = public)
-        function obj = LCR_E4980(Serial_number)
+        function obj = LCR_E4980AL(Serial_number)
             arguments
                 Serial_number = []
             end
@@ -74,7 +74,6 @@ classdef LCR_E4980 < handle
                 response = obj.query(':FETCh:IMPedance:FORmatted?');
                 CMD = [':FUNCtion:IMPedance:TYPE ' char(prev_mode)];
                 obj.send(CMD);
-                disp('NYAN!')
             else
                 response = obj.query(':FETCh:IMPedance:FORmatted?');
             end

@@ -11,14 +11,13 @@
 % ------------
 
 % TODO:
-% 1) move visa functions from AFG1022 and adev_utils to Fern::Connector
-% 2) add more functions
-% 3) add second channel
+% 1) add more functions
+% 2) add second channel
 
-classdef AFG1022_dev < handle
+classdef AFG1022_dev < aDevice
     properties (Access = private)
         visa_dev = [];
-
+        Serial_number = [];
     end
 
 %--------------------------------PUBLIC--------------------------------
@@ -28,32 +27,33 @@ classdef AFG1022_dev < handle
                 Serial_number = []
             end
             [vias_adr, SN] = con_utils.find_visa_dev_by_name("AFG1022", Serial_number);
-            obj.visa_dev = visa('ni',vias_adr);
+            obj@aDevice(Connector_VISA(vias_adr));
+            obj.Serial_number = SN;
         end
-        
-        function delete(obj)
-             delete(obj.visa_dev); %FIXME: use it or not?
+
+        function sn = get_serial_number(obj)
+            sn = obj.Serial_number;
         end
 
         function response = IDN(obj)
-            response = obj.query("*IDN?");
+            response = obj.query_and_log("*IDN?");
             response = strtrim(response);
         end
 
         function initiate(obj)
             CMD = 'OUTPut1:STATe ON';
-            obj.send(CMD);
+            obj.send_and_log(CMD);
         end
 
         function terminate(obj)
             CMD = 'OUTPut1:STATe OFF';
-            obj.send(CMD);
+            obj.send_and_log(CMD);
         end
 
         function freq = set_freq(obj, freq_in)
             CMD = ['SOURCE1:FREQUENCY:FIXED ' num2str(freq_in) ' Hz'];
-            obj.send(CMD);
-            resp = obj.query('SOURCE1:FREQUENCY:FIXED?');
+            obj.send_and_log(CMD);
+            resp = obj.query_and_log('SOURCE1:FREQUENCY:FIXED?');
             resp = strtrim(resp);
             data = sscanf(resp, '%f');
             if ~isempty(data)
@@ -71,8 +71,8 @@ classdef AFG1022_dev < handle
                 amp = amp * 2;
             end
             CMD = ['SOURce1:VOLTage:LEVel:IMMediate:AMPLitude ' num2str(amp) ' Vpp'];
-            obj.send(CMD);
-            resp = obj.query('SOURce1:VOLTage:LEVel:IMMediate:AMPLitude?');
+            obj.send_and_log(CMD);
+            resp = obj.query_and_log('SOURce1:VOLTage:LEVel:IMMediate:AMPLitude?');
             resp = strtrim(resp);
             data = sscanf(resp, '%f');
             if ~isempty(data)
@@ -86,8 +86,8 @@ classdef AFG1022_dev < handle
                 offset double
             end
             CMD = ['SOURce1:VOLTage:LEVel:IMMediate:OFFSet ' num2str(offset) ' V'];
-            obj.send(CMD);
-            resp = obj.query('SOURce1:VOLTage:LEVel:IMMediate:OFFSet?');
+            obj.send_and_log(CMD);
+            resp = obj.query_and_log('SOURce1:VOLTage:LEVel:IMMediate:OFFSet?');
             resp = strtrim(resp);
             data = sscanf(resp, '%f');
             if ~isempty(data)
@@ -110,34 +110,13 @@ classdef AFG1022_dev < handle
                 shape = 'RAMP';
             end
             CMD = ['SOURce1:FUNCtion:SHAPe ' shape];
-            obj.send(CMD);
-            shape = obj.query('SOURce1:FUNCtion:SHAPe?');
+            obj.send_and_log(CMD);
+            shape = obj.query_and_log('SOURce1:FUNCtion:SHAPe?');
             shape = strtrim(shape);
         end  
 
-
     end
-    
-    %-------------------------------PRIVATE--------------------------------
 
-    
-    methods (Access = private)
-        function send(obj, CMD)
-            dev = obj.visa_dev;
-            fopen(dev);
-            fprintf(dev, CMD);
-            fclose(dev);
-        end
-
-        function response = query(obj, CMD)
-            dev = obj.visa_dev;
-            fopen(dev);
-            fprintf(dev, CMD);
-            response = fscanf(dev);
-            fclose(dev);
-        end
-    end
-    
 end
 
 

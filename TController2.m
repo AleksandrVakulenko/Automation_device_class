@@ -1,11 +1,10 @@
+
 % TODO:
 % 1) Use Connector_USB
 % 2) Add inheritance from aDevice
 % 3) Add temp_controller_traits
 % 4) Add inheritance from temp_controller_traits
 % 5) 
-
-
 
 
 classdef TController2 < handle

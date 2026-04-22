@@ -22,6 +22,7 @@ classdef FG120_dev < aDevice
             arguments
                 GPIB_num {adev_utils.GPIB_validation(GPIB_num)}
             end
+            % FIXME: replace by Connector_VISA
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
             DEBUG_MSG("FG120 generator", 'red', 'ctor')
         end

@@ -6,7 +6,7 @@
 % <Class for instrument control>
 % Manufacturer: Stanford Research
 % Model: SR844
-% Description: RF Lock In Amplifier
+% Description: RF Lock In Amplifier 25 kHz - 200 MHz
 % 
 % ------------
 
@@ -22,6 +22,7 @@ classdef SR844_dev < aDevice
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
                     25, 26, 27, 28, 29, 30])}
             end
+            % FIXME: replace by Connector_VISA 
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
         end
     end

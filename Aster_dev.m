@@ -11,9 +11,8 @@
 % ------------
 
 % TODO:
-%  1) 
+%  1) do refactor
 %  2) 
-%  3)
 
 classdef Aster_dev < aDevice & ...
                      I2V_converter_traits & ...

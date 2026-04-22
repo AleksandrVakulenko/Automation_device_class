@@ -6,7 +6,7 @@
 % <Class for instrument control>
 % Manufacturer: Stanford Research
 % Model: SR860
-% Description: Lock In Amplifier
+% Description: Lock In Amplifier 0.001 Hz до 500 kHz;
 % 
 % ------------
 
@@ -28,6 +28,7 @@ classdef SR860_dev < aDevice
                     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
                     25, 26, 27, 28, 29, 30])}
             end
+            % FIXME: replace by Connector_VISA 
             obj@aDevice(Connector_GPIB_fast(GPIB_num))
         end
     end

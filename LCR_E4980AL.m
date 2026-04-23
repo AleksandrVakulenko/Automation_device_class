@@ -9,6 +9,19 @@
 % Description: LCR meter
 % 
 % ------------
+% Class Constructor argument may be GPIB address, serial number or empty
+% Examples:
+% Empty:
+%   []
+% Serial number: (types: <string/char>)
+%   "MY54305367" 
+% GPIB number: (types: any(?) numerical)
+%   14 
+% GPIB string: (types: <string/char>)
+%   "GPIB14" 
+%   "GPIB0::14"
+%   "GPIB1::14"
+%   "GPIB0::14::INSTR"
 
 % TODO:
 % 1) add option: response timeout and how many times it could be remeasured
@@ -21,21 +34,23 @@ classdef LCR_E4980AL < aDevice
 
     %--------------------------------PUBLIC--------------------------------
     methods (Access = public)
-        function obj = LCR_E4980AL(Serial_number)
+        function obj = LCR_E4980AL(GPIB_string)
             arguments
-                Serial_number = []
+                GPIB_string = []
             end
-            [vias_adr, SN] = con_utils.VISA_find_dev_by_name("E4980AL", ...
-                Serial_number, ["USB", "GPIB"]);
-            if isempty(vias_adr) % FIXME: is it enought? need validation
-                error('connection error');
-            end
-            obj@aDevice(Connector_VISA(vias_adr, 'timeout', 10));
+            [visa_addr, SN] = con_utils.VISA_str2gpib(GPIB_string, "E4980AL", ...
+                ["USB", "GPIB"]);
+            obj@aDevice(Connector_VISA(visa_addr, 'timeout', 10));
             obj.Serial_number = SN;
         end
     
         function sn = get_serial_number(obj)
-            sn = obj.Serial_number;
+            if ~isempty(obj.Serial_number)
+                sn = obj.Serial_number;
+            else
+                % FIXME: need update
+                sn = 'undefined';
+            end
         end
 
         function volt_out = set_volt(obj, volt_in)

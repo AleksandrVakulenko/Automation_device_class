@@ -26,7 +26,7 @@ classdef AFG1022_dev < aDevice
             arguments
                 Serial_number = []
             end
-            [vias_adr, SN] = con_utils.find_visa_dev_by_name("AFG1022", Serial_number);
+            [vias_adr, SN] = con_utils.VISA_find_dev_by_name("AFG1022", Serial_number);
             obj@aDevice(Connector_VISA(vias_adr));
             obj.Serial_number = SN;
         end

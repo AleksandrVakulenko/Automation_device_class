@@ -25,7 +25,7 @@ classdef LCR_E4980AL < aDevice
             arguments
                 Serial_number = []
             end
-            [vias_adr, SN] = con_utils.find_visa_dev_by_name("E4980AL", ...
+            [vias_adr, SN] = con_utils.VISA_find_dev_by_name("E4980AL", ...
                 Serial_number, ["USB", "GPIB"]);
             if isempty(vias_adr) % FIXME: is it enought? need validation
                 error('connection error');

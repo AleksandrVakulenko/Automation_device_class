@@ -20,7 +20,7 @@ classdef FG120_dev < aDevice
     methods (Access = public)
         function obj = FG120_dev(GPIB_num)
             arguments
-                GPIB_num {adev_utils.GPIB_validation(GPIB_num)}
+                GPIB_num {con_utils.GPIB_validation(GPIB_num)}
             end
             % FIXME: replace by Connector_VISA
             obj@aDevice(Connector_GPIB_fast(GPIB_num))

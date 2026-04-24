@@ -63,6 +63,10 @@ classdef aDevice < handle
 
     methods (Access = protected)
 
+        function flush_con(obj)
+            obj.con.flush;
+        end
+        
         % log wrapper for read
         function Data = read_and_log(obj, num_of_bytes, mode)
             arguments
@@ -78,7 +82,7 @@ classdef aDevice < handle
         function send_and_log(obj, CMD)
             arguments
                 obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
+                CMD {mustBeNonempty(CMD)}
             end
             obj.DEBUG_CMD_LOG(CMD);
             obj.con.send(CMD);
@@ -88,7 +92,7 @@ classdef aDevice < handle
         function resp = query_and_log(obj, CMD, Delay)
             arguments
                 obj
-                CMD (1,1) string {mustBeNonempty(CMD)}
+                CMD (1,1) string {mustBeNonempty(CMD)} % FIXME: why only string?
                 Delay {mustBeMember(Delay, ["norm", "fast", "no delay"])} = "fast"
             end
             obj.DEBUG_CMD_LOG(CMD);

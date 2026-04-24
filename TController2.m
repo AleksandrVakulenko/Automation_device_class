@@ -1,36 +1,34 @@
+% Date: 2026.04.23
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: NCM lab
+% Model: Temp controller V2
+% Description: Single channel temperature controller
+%
+% ------------
 
 % TODO:
-% 1) Use Connector_USB
-% 2) Add inheritance from aDevice
-% 3) Add temp_controller_traits
-% 4) Add inheritance from temp_controller_traits
-% 5) 
+% 1) Add temp_controller_traits
+% 2) Add inheritance from temp_controller_traits
+% 3) Add hardware description
+% 4)
 
 
-classdef TController2 < handle
+classdef TController2 < aDevice
     %--------------------------------PUBLIC--------------------------------
     methods (Access = public)
-        function obj = TController2(port_name)
-%             close_all_classes();
-            obj.COM_port_str = char(port_name);
-            port_name_check(obj.COM_port_str);
-%             disp(['TController2 created at port: ' obj.COM_port_str]);
-            obj.Serial_obj = serialport(obj.COM_port_str, 9600);
-            disp(['TController2 connected at port: ' obj.COM_port_str])
-            obj.connected_flag = 1;
+        function obj = TController2(COM_port)
+            [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            obj@aDevice(Connector_COM_USB(Full_address));
+            disp(['TController2 connected at port: ' char(Full_address)])
         end
 
-        function delete(obj)
-            if obj.connected_flag == 1
-            % TODO: heater off
-%             obj.Disable_12V;
-%             obj.Disable_heater;
-%             [Temp, ~, ~] = read_temp(obj);
-%             obj.Set_setpoint(Temp.temp);
-            delete(obj.Serial_obj);
-            disp('TController2 closed');
-            end
-        end
+%         function delete(obj)
+%             
+%         end
 
         function [Temp, flags, trigger, stable] = read_temp(obj)
             Data = obj.get_bytes();
@@ -156,51 +154,24 @@ classdef TController2 < handle
 
     %-------------------------------PRIVATE--------------------------------
     properties (Access = private)
-        COM_port_str = '';
         Serial_obj = [];
         Wait_data_timeout = 1; %s
         number_of_bytes = 32;
-        connected_flag = 0;
     end
 
     methods (Access = private)
 
         function send_cmd(obj, CMD)
-%             uint8(CMD);
-            write(obj.Serial_obj, uint8(CMD), "uint8");
+            obj.send_and_log(CMD);
+%             write(obj.Serial_obj, uint8(CMD), "uint8");
             pause(0.012);
         end
 
-        function [Data, timeout_flag] = get_bytes(Obj)
-            Obj.CMD_data_req;
+        function Data = get_bytes(obj)
+            obj.CMD_data_req;
             pause(0.1);
-            serial_obj = Obj.Serial_obj;
-            Wait_timeout = Obj.Wait_data_timeout;
-            timeout_flag = 0;
-            stop = 0;
-            Time_start = tic;
-            while ~stop
-                Bytes_count = serial_obj.NumBytesAvailable;
-
-                if Bytes_count == Obj.number_of_bytes
-                    Data = read(serial_obj, Bytes_count, "uint8");
-                    stop = 1;
-                end
-
-                if Bytes_count > Obj.number_of_bytes
-                    serial_flush(Obj.Serial_obj);
-                end
-
-                Time_now = toc(Time_start);
-                if Time_now > Wait_timeout
-                    stop = 1;
-                    timeout_flag = 1;
-                    Data = 0;
-                end
-            end
-            if Bytes_count ~= 0
-%                 Obj.CMD_ack();
-            end
+            Data = obj.read_and_log(obj.number_of_bytes, 'multiple');
+            obj.flush_con();
         end
 
     end
@@ -208,31 +179,31 @@ end
 
 
 
-function port_name_check(port_name)
-Avilable_ports = serialportlist('available');
+% function port_name_check(port_name)
+% Avilable_ports = serialportlist('available');
+% 
+% if ~(sum(Avilable_ports == port_name) == 1)
+%     Text_ports_list = '';
+%     for i = 1:numel(Avilable_ports)
+%         Text_ports_list = [Text_ports_list char(Avilable_ports(i)) newline];
+%     end
+% 
+%     msg = ['ERROR: No such com port name.' newline ...
+%         'List of avilable ports:' newline ...
+%         Text_ports_list ...
+%         'Provided name: ' port_name];
+%     error(msg)
+% end
+% end
 
-if ~(sum(Avilable_ports == port_name) == 1)
-    Text_ports_list = '';
-    for i = 1:numel(Avilable_ports)
-        Text_ports_list = [Text_ports_list char(Avilable_ports(i)) newline];
-    end
 
-    msg = ['ERROR: No such com port name.' newline ...
-        'List of avilable ports:' newline ...
-        Text_ports_list ...
-        'Provided name: ' port_name];
-    error(msg)
-end
-end
-
-
-function serial_flush(serial_obj)
-pause(0.05) %FIXME: why pause?
-Bytes_count = serial_obj.NumBytesAvailable;
-if Bytes_count > 0
-    read(serial_obj, Bytes_count, "uint8");
-end
-end
+% function serial_flush(serial_obj)
+% pause(0.05) %FIXME: why pause?
+% Bytes_count = serial_obj.NumBytesAvailable;
+% if Bytes_count > 0
+%     read(serial_obj, Bytes_count, "uint8");
+% end
+% end
 
 
 % function [Value_X, Value_Y, CMD] = unpack_raw_bytes(Data_all)
@@ -262,23 +233,6 @@ end
 % Value_X = (Bytes_01*256 + Bytes_02)*10/2^15;
 % Value_Y = (Bytes_03*256 + Bytes_04)*10/2^15;
 % end
-
-function close_all_classes()
-input_class_name = 'TController2';
-baseVariables = evalin('base' , 'whos');
-Indexes = string({baseVariables.class}) == input_class_name;
-Var_names = string({baseVariables.name});
-Var_names = Var_names(Indexes);
-Valid = zeros(size(Var_names));
-for i = 1:numel(Var_names)
-    Valid(i) = evalin('base', ['isvalid(' char(Var_names(i)) ')']);
-end
-Valid = logical(Valid);
-Var_names = Var_names(Valid);
-for i = 1:numel(Var_names)
-    evalin('base', ['delete(' char(Var_names(i)) ')']);
-end
-end
 
 
 function value = correct_value(value, low, high)

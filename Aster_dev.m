@@ -24,16 +24,12 @@ classdef Aster_dev < aDevice & ...
     end
 
     methods (Access = public)
-        function obj = Aster_dev(COM_port_N)
+        function obj = Aster_dev(COM_port)
             arguments
-                COM_port_N
+                COM_port
             end
-            if isnumeric(COM_port_N)
-                COM_port_name = string(['COM' num2str(COM_port_N)]);
-            else
-                COM_port_name = COM_port_N; % FIXME: bad name
-            end
-            obj@aDevice(Connector_COM_USB(COM_port_name));
+            [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            obj@aDevice(Connector_COM_USB(Full_address));
             pause(0.1);
             obj.init_device();
         end
@@ -44,11 +40,7 @@ classdef Aster_dev < aDevice & ...
         end
    
 %         function delete(obj)
-%             try
 %                 obj.terminate();
-%             catch
-%                 disp("Error in Aster d-tor");
-%             end
 %         end
     end
 

@@ -16,14 +16,18 @@
 % 3) add second channel
 
 classdef FG120_dev < aDevice
-
+    properties(Access = private)
+        Serial_number = [];
+    end
+    
     methods (Access = public)
-        function obj = FG120_dev(GPIB_num)
+        function obj = FG120_dev(GPIB_string)
             arguments
-                GPIB_num {con_utils.GPIB_validation(GPIB_num)}
+                GPIB_string
             end
-            % FIXME: replace by Connector_VISA
-            obj@aDevice(Connector_GPIB_fast(GPIB_num))
+            [visa_addr, SN] = con_utils.VISA_str2gpib(GPIB_string, [], "GPIB");
+            obj@aDevice(Connector_VISA(visa_addr, 'timeout', 1));
+            obj.Serial_number = SN;
             DEBUG_MSG("FG120 generator", 'red', 'ctor')
         end
     end

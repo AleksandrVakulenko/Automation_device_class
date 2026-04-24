@@ -1,7 +1,9 @@
 
 clc
 
+% dev = FG120_dev('GPIB1::15');
 dev = FG120_dev(15);
+
 
 dev.set_freq(10.9)
 dev.get_freq()

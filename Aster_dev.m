@@ -207,7 +207,7 @@ classdef Aster_dev < aDevice & ...
 
 
 
-    methods (Access = private)
+    methods (Access = public)
         function send_cmd(obj, cmd, varargin)
             narginchk(2, 4);
             if nargin > 2
@@ -229,6 +229,35 @@ classdef Aster_dev < aDevice & ...
         
         function CMD_data_req(obj)
             obj.send_cmd(9);
+        end
+
+        function DEBUG_GEN_OUT(obj, active)
+            arguments
+                obj
+                active logical
+            end
+            if active
+                obj.send_cmd(103, 1);
+            else
+                obj.send_cmd(103, 0);
+            end
+        end
+
+        function ADC_filter(obj, Fc)
+            arguments
+                obj
+                Fc {mustBeMember(Fc, ["off", "1", "20", "100"])}
+            end
+            if Fc == "1"
+                obj.send_cmd(7, 1);
+            elseif Fc == "20"
+                obj.send_cmd(7, 2);
+            elseif Fc == "100"
+                obj.send_cmd(7, 3);
+            elseif Fc == "off"
+                obj.send_cmd(7, 0);
+            end
+               
         end
 
         function I2V_disarm(obj)

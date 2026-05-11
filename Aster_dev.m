@@ -227,6 +227,26 @@ classdef Aster_dev < aDevice & ...
             pause(0.012);
         end
         
+        function send_long_cmd(obj, cmd, data)
+            if cmd < 200
+                warning('long CMD ignored/ wrong CMD code')
+            else
+                [d_bytes, size_bytes] = convert2bytes(data);
+                [~, checksum_bytes] = FE_loop_utils.adler32(d_bytes);
+%                 checksum_bytes(1) = 2;
+                CMD_packet = [uint8(cmd) uint8(0) uint8(0) size_bytes checksum_bytes d_bytes];
+                N = numel(CMD_packet);
+                if N > 1024 % FIXME: magic constant
+                    warning("ERROR! LONG PACKET >1024 bytes")
+                else
+                    obj.con.send(uint8(CMD_packet));
+                    pause(0.012);
+                end
+            end
+        end
+
+
+
         function CMD_data_req(obj)
             obj.send_cmd(9);
         end
@@ -603,13 +623,13 @@ Full_time_stamp = Time_stamp_epoch*uint64(2^32) + Time_stamp_time;
 ADC1_part = Data_table(ADC1_argA_row, :);
 ADC1_part = reshape(ADC1_part, [1 numel(ADC1_part)]);
 ADC_1_code = double(typecast(uint8(ADC1_part), 'int32'));
-ADC_1_voltage = ADC_1_code/2^17*ADC1_ref_voltage;
+ADC_1_voltage = ADC_1_code/2^17*ADC1_ref_voltage/10;
 % ADC_1_voltage = ADC_1_code;
 
 ADC2_part = Data_table(ADC2_argB_row, :);
 ADC2_part = reshape(ADC2_part, [1 numel(ADC1_part)]);
 ADC_2_code = double(typecast(uint8(ADC2_part), 'int32'));
-ADC_2_voltage = ADC_2_code/2^17*ADC2_ref_voltage;
+ADC_2_voltage = ADC_2_code/2^17*ADC2_ref_voltage/10;
 % ADC_2_voltage = ADC_2_code;
 
 end
@@ -618,3 +638,96 @@ end
 
 
 
+% FOR LONG CMD (from Dahlia\+FE_loop_utils)
+% -------------------------------------------------------------------------
+function [result, bytes_out] = adler32(bytes)
+
+s1 = uint32(1);
+s2 = uint32(0);
+
+for i = 1:numel(bytes)
+    s1 = mod(sum_uint32(s1, bytes(i)), 65521);
+    s2 = mod(sum_uint32(s1, s2), 65521);
+end
+
+s2 = mult_uint32(s2, uint32(2^16));
+s2 = sum_uint32(s2, s1);
+
+result = s2;
+% bytes_out = flip(typecast([typecast(result, 'uint8')], 'uint8'));
+bytes_out = flip(typecast(result, 'uint8'));
+end
+
+function result = sum_uint32(x, y)
+result = uint32( mod( double(x) + double(y) , uint64(2)^32) );
+end
+
+function result = mult_uint32(x, y)
+result = uint32( mod( double(x) * double(y) , uint64(2)^32) );
+end
+
+
+% FOR LONG CMD (from Dahlia)
+% -------------------------------------------------------------------------
+
+function [d_bytes, size_bytes] = convert2bytes(data)
+%     class(data)
+    switch class(data)
+        case "uint8"
+            [d_bytes, size_bytes] = data_uint8_to_bytes(data);
+        case "uint32"
+            [d_bytes, size_bytes] = data_uint32_to_bytes(data);
+        case "int32"
+            [d_bytes, size_bytes] = data_int32_to_bytes(data);
+        case "single"
+            [d_bytes, size_bytes] = data_single_to_bytes(data);
+        case "FE_loop_utils.Pulse_waveform_init"
+            [d_bytes, size_bytes] = data_wf_pulse_to_bytes(data);
+        otherwise
+            error('Wrong type to byte conversion')
+    end
+end
+
+
+function [data, size_bytes] = data_uint8_to_bytes(data)
+    data_size = uint16(numel(data));
+    size_bytes = flip(typecast(data_size, 'uint8'));
+end
+
+
+function [d_bytes, size_bytes] = data_uint32_to_bytes(data)
+    d_bytes = typecast(uint32(data), 'uint8');
+    d_bytes = reshape(d_bytes, 4, numel(d_bytes)/4);
+    d_bytes = flip(d_bytes, 1);
+    d_bytes = reshape(d_bytes, 1, numel(d_bytes));
+    
+    data_size = uint16(numel(d_bytes));
+    size_bytes = flip(typecast(data_size, 'uint8'));
+end
+
+
+function [d_bytes, size_bytes] = data_int32_to_bytes(data)
+    d_bytes = typecast(int32(data), 'uint8');
+    d_bytes = reshape(d_bytes, 4, numel(d_bytes)/4);
+    d_bytes = flip(d_bytes, 1);
+    d_bytes = reshape(d_bytes, 1, numel(d_bytes));
+    
+    data_size = uint16(numel(d_bytes));
+    size_bytes = flip(typecast(data_size, 'uint8'));
+end
+
+
+function [d_bytes, size_bytes] = data_single_to_bytes(data)
+    d_bytes = typecast(data, 'uint8');
+    data_size = uint16(numel(d_bytes));
+    size_bytes = flip(typecast(data_size, 'uint8'));
+end
+
+
+function [d_bytes, size_bytes] = data_wf_pulse_to_bytes(data)
+    [prop_float, prop_uint8] = data.get_prop();
+    [d_bytes1, size_bytes1] = data_single_to_bytes(prop_float);
+    [d_bytes2, size_bytes2] = data_uint8_to_bytes(prop_uint8);
+    d_bytes = [d_bytes1 d_bytes2];
+    size_bytes = size_bytes1 + size_bytes2;
+end

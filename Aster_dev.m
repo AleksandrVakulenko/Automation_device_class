@@ -224,7 +224,7 @@ classdef Aster_dev < aDevice & ...
             arg_b_bytes = flip(typecast(uint32(arg_b), 'uint8'));
             CMD_packet = [uint8(cmd) arg_a_bytes arg_b_bytes];
             obj.con.send(uint8(CMD_packet));
-            pause(0.012);
+            pause(0.02);
         end
         
         function send_long_cmd(obj, cmd, data)
@@ -240,7 +240,11 @@ classdef Aster_dev < aDevice & ...
                     warning("ERROR! LONG PACKET >1024 bytes")
                 else
                     obj.con.send(uint8(CMD_packet));
-                    pause(0.012);
+                    Delay_time = N*10/9600*2.5
+                    if Delay_time < 0.015
+                        Delay_time = 0.015;
+                    end
+                    pause(Delay_time);
                 end
             end
         end
@@ -251,17 +255,62 @@ classdef Aster_dev < aDevice & ...
             obj.send_cmd(9);
         end
 
-        function DEBUG_GEN_OUT(obj, active)
+
+% GENERATOR---------------------------------------------------------------------
+        function Generator_out_mux(obj, MUX)
+            arguments
+                obj
+                MUX {mustBeMember(MUX, [0, 1, 2, 3])}
+            end
+            obj.send_cmd(101, MUX);
+        end
+
+        function Generator_out_opamp(obj, type)
+            arguments
+                obj
+                type {mustBeMember(type, ["AD817", "OPA182"])}
+            end
+            if type == "AD817"
+                obj.send_cmd(102, 1);
+            else
+                obj.send_cmd(102, 0);
+            end
+        end
+
+        function Generator_out_active(obj, active)
             arguments
                 obj
                 active logical
             end
-            if active
-                obj.send_cmd(103, 1);
-            else
-                obj.send_cmd(103, 0);
-            end
+            obj.send_cmd(103, active);
         end
+
+        function Generator_waveform(obj, Amp, Freq, Gen_type, Bias, Pulse_type, Continuous, Duty)
+        arguments
+            % FIXME: add options struct for default values
+            obj
+            Amp double {mustBeGreaterThanOrEqual(Amp, 0), ...
+                mustBeLessThanOrEqual(Amp, 10)}
+            Freq double {mustBeGreaterThan(Freq, 0), ...
+                mustBeLessThanOrEqual(Freq, 200)}
+            Gen_type {mustBeMember(Gen_type, ["triangle", "sin", ...
+                "noise", "pulse"])} = "sin"
+            Bias double {mustBeGreaterThanOrEqual(Bias, -10), ...
+                mustBeLessThanOrEqual(Bias, 10)} = 0
+            Pulse_type {mustBeMember(Pulse_type, ["bipolar", ...
+                "inverse_bipolar", "positive", "negative"])} = "bipolar"
+            Continuous logical = true
+            Duty double {mustBeGreaterThanOrEqual(Duty, 0), ...
+                mustBeLessThanOrEqual(Duty, 200)} = 50
+        end
+            Period = 1/Freq;
+            wf_gen = adev_utils.Astra_pulse_waveform_init(Amp, Period, Bias, Duty, ...
+                Pulse_type, Gen_type, Continuous);
+            obj.send_long_cmd(201, wf_gen);
+        end
+
+% ------------------------------------------------------------------------------
+
 
         function ADC_filter(obj, Fc)
             arguments
@@ -681,7 +730,7 @@ function [d_bytes, size_bytes] = convert2bytes(data)
             [d_bytes, size_bytes] = data_int32_to_bytes(data);
         case "single"
             [d_bytes, size_bytes] = data_single_to_bytes(data);
-        case "FE_loop_utils.Pulse_waveform_init"
+        case "adev_utils.Astra_pulse_waveform_init"
             [d_bytes, size_bytes] = data_wf_pulse_to_bytes(data);
         otherwise
             error('Wrong type to byte conversion')

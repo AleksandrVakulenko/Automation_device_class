@@ -19,6 +19,8 @@ classdef Aster_dev < aDevice & ...
                      Connector_board_traits
 
     properties (Access = private)
+        Current_range
+        Range_change_time
         FB_res
         bandwidth
     end
@@ -90,6 +92,8 @@ classdef Aster_dev < aDevice & ...
             Res_array = [200 10e3 1e6 100e6 10e9 1e12];
 %             BW_array = [130e3 200e3 8.5e3 60 0.1 0.05]; % Hz
             BW_array = [100e3 100e3 2.8e3 68 1.0 0.05]; % Hz
+            obj.Current_range = Range_num;
+            obj.Range_change_time = tic;
             obj.FB_res = Res_array(Range_num);
             obj.bandwidth = BW_array(Range_num);
         end
@@ -145,6 +149,11 @@ classdef Aster_dev < aDevice & ...
     methods (Access = public)
         function BW = get_bandwidth(obj)
             BW = obj.bandwidth;
+        end
+
+        function [R_num, Time] = get_current_range(obj)
+            Time = toc(obj.Range_change_time);
+            R_num = obj.Current_range;
         end
     end
 
@@ -263,6 +272,19 @@ classdef Aster_dev < aDevice & ...
                 MUX {mustBeMember(MUX, [0, 1, 2, 3])}
             end
             obj.send_cmd(101, MUX);
+            % NOTE:
+            % FOR AD817:
+            %  0 - 10 kHz
+            %  1 - 100 Hz
+            %  2 - 20 Hz
+            %  3 - 1.5 Hz
+            % 
+            % FOR OPA182
+            %  0 - /1 33 kHz
+            %  1 - /100 33 kHz
+            %  2 - /1000 3.3 kHz
+            %  3 - /1000 33 Hz
+            % 
         end
 
         function Generator_out_opamp(obj, type)
@@ -315,18 +337,45 @@ classdef Aster_dev < aDevice & ...
         function ADC_filter(obj, Fc)
             arguments
                 obj
-                Fc {mustBeMember(Fc, ["off", "1", "20", "100"])}
+                Fc double {mustBeGreaterThanOrEqual(Fc, 0.1), ...
+                    mustBeLessThanOrEqual(Fc, 1000)}
             end
-            if Fc == "1"
-                obj.send_cmd(7, 1);
-            elseif Fc == "20"
-                obj.send_cmd(7, 2);
-            elseif Fc == "100"
-                obj.send_cmd(7, 3);
-            elseif Fc == "off"
-                obj.send_cmd(7, 0);
+            F_cut = single(Fc);
+            [d_bytes, ~] = convert2bytes(F_cut);
+            d_bytes = flip(d_bytes);
+            ArgA = uint32(d_bytes(1))*uint32(2^24) + ...
+                   uint32(d_bytes(2))*uint32(2^16) + ...
+                   uint32(d_bytes(3))*uint32(2^8) + ...
+                   uint32(d_bytes(4));
+            obj.send_cmd(7, ArgA);
+        end
+
+    
+        function freq = ADC_send_freq(obj, freq)
+        arguments
+            obj
+            freq
+        end
+            Basic_freq = 20000; % Hz
+            Scale = Basic_freq/freq;
+            Scale = round(Scale);
+            if Scale < 1
+                Scale = 1;
             end
-               
+            if Scale > Basic_freq
+                Scale = Basic_freq;
+            end
+            freq = Basic_freq/Scale;
+
+            Scale = uint32(Scale);
+            [d_bytes, ~] = convert2bytes(Scale);
+            d_bytes = (d_bytes);
+            ArgA = uint32(d_bytes(1))*uint32(2^24) + ...
+                   uint32(d_bytes(2))*uint32(2^16) + ...
+                   uint32(d_bytes(3))*uint32(2^8) + ...
+                   uint32(d_bytes(4));
+
+            obj.send_cmd(6, ArgA);
         end
 
         function I2V_disarm(obj)
@@ -527,6 +576,8 @@ classdef Aster_dev < aDevice & ...
             obj.Gen_direction("Lock_in");
             obj.cap_short(1);
 
+            obj.Range_change_time = tic;
+            obj.Current_range = 2;
             obj.FB_res = 10e3;
             obj.bandwidth = 200e3;
         end
@@ -607,7 +658,7 @@ classdef Aster_dev < aDevice & ...
             Relay_state = -1;
             Unit = -1;
             multiplier = -1;
-            Time = double(Full_time_stamp)*100e-6; % s % FIXME: magic constant
+            Time = double(Full_time_stamp)*50e-6; % s % FIXME: magic constant
             Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2?
             Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1?
             % Device_state_byte = Device_state_byte;

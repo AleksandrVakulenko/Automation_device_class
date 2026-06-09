@@ -90,3 +90,34 @@ catch err
 end
 lcr_dev.terminate;
 lcr_dev.delete;
+
+
+
+%% Other test
+
+
+clc
+
+lcr_dev = LCR_E4980AL();
+disp('Connected')
+disp(['Serial number: ' char(lcr_dev.get_serial_number)])
+disp(' ')
+
+lcr_dev.set_measurment_function("Cp-G");
+
+lcr_dev.set_speed("short", 1)
+lcr_dev.set_volt(1);
+lcr_dev.set_freq(20e3);
+
+lcr_dev.set_measurment_function("Z-thd");
+[A, B] = lcr_dev.get_readings()
+
+% [R1, R2] = lcr_dev.get_res
+[C, D] = lcr_dev.get_cap
+[C, D] = lcr_dev.get_cap
+[C, D] = lcr_dev.get_cap
+
+
+delete(lcr_dev)
+disp(' ')
+disp('Deleted')

@@ -151,9 +151,10 @@ classdef Aster_dev < aDevice & ...
             BW = obj.bandwidth;
         end
 
-        function [R_num, Time] = get_current_range(obj)
+        function [R_num, Time, FB_res] = get_current_range(obj)
             Time = toc(obj.Range_change_time);
             R_num = obj.Current_range;
+            FB_res = obj.FB_res;
         end
     end
 

@@ -126,7 +126,8 @@ classdef LCR_8230 < aDevice
         end
 
         function [RDC, Z, DEG, resp] = measure_and_read(obj)
-            resp = obj.query_and_log("*TRG?");
+            obj.query_and_log('*TRG');
+            resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
             catch
@@ -149,5 +150,5 @@ classdef LCR_8230 < aDevice
 
     end
 
-
+    
 end

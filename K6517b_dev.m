@@ -18,7 +18,7 @@
 %  5) find values of Feedback elements
 %  6) rename enable_feedback()
 
-classdef K6517b_dev < aDevice & I2V_converter_traits
+classdef K6517b_dev < aDevice & adev_traits.I2V_converter_traits
     methods (Access = public)
         function obj = K6517b_dev(GPIB_num)
             arguments

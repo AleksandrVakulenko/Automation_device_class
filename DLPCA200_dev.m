@@ -20,7 +20,7 @@
 %  2) Create Ammeter_traits
 %  3)
 
-classdef DLPCA200_dev < aDevice & I2V_converter_traits
+classdef DLPCA200_dev < aDevice & adev_traits.I2V_converter_traits
     properties (Access = private)
         sense
         bandwidth

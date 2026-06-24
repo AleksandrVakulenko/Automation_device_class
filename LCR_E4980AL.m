@@ -27,9 +27,10 @@
 % 1) add option: response timeout and how many times it could be remeasured
 % 
 
-classdef LCR_E4980AL < aDevice
+classdef LCR_E4980AL < aDevice & adev_traits.LCR_meter_traits
     properties(Access = private)
         Serial_number = [];
+        Accuracy_level = [];
     end
 
     %--------------------------------PUBLIC--------------------------------
@@ -42,6 +43,9 @@ classdef LCR_E4980AL < aDevice
                 ["USB", "GPIB"]);
             obj@aDevice(Connector_VISA(visa_addr, 'timeout', 10));
             obj.Serial_number = SN;
+            obj.Accuracy_level = 1;
+            obj.set_accuracy_override(obj.Accuracy_level);
+            obj.terminate();
         end
     
         function sn = get_serial_number(obj)
@@ -63,7 +67,6 @@ classdef LCR_E4980AL < aDevice
             data = sscanf(response, '%f');
             volt_out = data(1);
         end
-
 
         function freq_out = set_freq(obj, freq_in)
             % NOTE: freq limit for model E4980AL
@@ -182,6 +185,89 @@ classdef LCR_E4980AL < aDevice
             end
         end
 
+    end
+
+
+    methods (Access = public)
+        function initiate(obj)
+            obj.set_measurment_function("Z-thd");
+        end
+
+        function terminate(obj)
+            obj.set_volt(0); % FIXME: need test
+            obj.set_freq(300e3);
+        end
+    end
+
+
+    methods (Access = protected)
+        function Freq_out = set_freq_override(obj, Freq)
+            arguments
+                obj LCR_E4980AL
+                Freq double
+            end
+            Freq_out = obj.set_freq(Freq);
+        end
+
+        function Amp_out = set_amplitude_override(obj, Amp)
+            arguments
+                obj LCR_E4980AL
+                Amp double
+            end
+            Amp_out = obj.set_volt(Amp);
+        end
+        
+        function DC_bias_out = set_DC_bias_override(obj, DC_bias)
+            arguments
+                obj LCR_E4980AL
+                DC_bias double = 0
+            end
+            % NOTE: this model could set only 0V, 1V, 2V of DC bias
+            DC_bias_out = 0;
+        end
+
+        function set_accuracy_override(obj, Accuracy_level)
+            arguments
+                obj LCR_E4980AL
+                Accuracy_level {mustBeMember(Accuracy_level, [1, 2, 3, 4])}
+            end
+            obj.Accuracy_level = Accuracy_level;
+            % FIXME: need tests
+            switch Accuracy_level
+                case 1
+                    obj.set_speed("short", 2);
+                case 2
+                    obj.set_speed("medium", 3);
+                case 3
+                    obj.set_speed("long", 5);
+                case 4
+                    obj.set_speed("long", 10);
+            end
+        end
+        
+        function Accuracy_level = get_accuracy_level_oveeride(obj)
+            arguments
+                obj LCR_E4980AL
+            end
+            Accuracy_level = obj.Accuracy_level;
+        end
+        
+        function [R_abs, Phi_deg] = get_R_Phi_override(obj)
+            arguments
+                obj LCR_E4980AL
+            end
+            obj.set_measurment_function("Z-thd"); % NOTE: every time
+            [R_abs, Phi_deg] = obj.get_readings();
+        end
+        
+        function [Max_amp, Max_freq] = get_max_amp_and_freq_override(obj)
+            arguments
+                obj LCR_E4980AL
+            end
+            Max_amp = 2;
+            Max_freq = 300e3;
+        end
+        
     end
 
 end

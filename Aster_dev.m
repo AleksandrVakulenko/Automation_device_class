@@ -15,8 +15,8 @@
 %  2) 
 
 classdef Aster_dev < aDevice & ...
-                     I2V_converter_traits & ...
-                     Connector_board_traits
+                     adev_traits.I2V_converter_traits & ...
+                     adev_traits.Connector_board_traits
 
     properties (Access = private)
         Current_range

@@ -251,12 +251,14 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             [~, R_abs, Phi_deg] = obj.measure_and_read_Z_DEG();
         end
 
-        function [Max_amp, Max_freq] = get_max_amp_and_freq_override(obj)
+        function [Min_amp, Max_amp, Min_freq, Max_freq] = get_max_amp_and_freq_override(obj)
             arguments
                 obj LCR_8230_dev
             end
-            Max_amp = 1; % FIMXE: maybe wrong
-            Max_freq = 30e6;
+            Min_amp = 0.001; % FIXME: check this
+            Max_amp = 1; % FIXME: check this
+            Min_freq = 10;
+            Max_freq = 30e6; % FIXME: check this
         end
         
     end

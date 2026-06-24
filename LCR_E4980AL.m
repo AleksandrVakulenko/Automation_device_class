@@ -260,11 +260,13 @@ classdef LCR_E4980AL < aDevice & adev_traits.LCR_meter_traits
             [R_abs, Phi_deg] = obj.get_readings();
         end
         
-        function [Max_amp, Max_freq] = get_max_amp_and_freq_override(obj)
+        function [Min_amp, Max_amp, Min_freq, Max_freq] = get_max_amp_and_freq_override(obj)
             arguments
                 obj LCR_E4980AL
             end
+            Min_amp = 0.001; % FIXME: check this
             Max_amp = 2;
+            Min_freq = 20;
             Max_freq = 300e3;
         end
         

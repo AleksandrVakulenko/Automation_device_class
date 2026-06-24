@@ -97,11 +97,15 @@ classdef LCR_meter_traits < handle
             Phi_deg_err = 3*std(Phi_deg_arr);
         end
 
-        function [Max_amp, Max_freq] = get_max_amp_and_freq(obj)
+        function Limits = get_max_amp_and_freq(obj)
             arguments
                 obj LCR_meter_traits
             end
-            [Max_amp, Max_freq] = obj.get_max_amp_and_freq_override();
+            [Min_amp, Max_amp, Min_freq, Max_freq] = obj.get_max_amp_and_freq_override();
+            Limits.amp_min = Min_amp;
+            Limits.amp_max = Max_amp;
+            Limits.freq_min = Min_freq;
+            Limits.freq_max = Max_freq;
         end
     end
     
@@ -112,7 +116,7 @@ classdef LCR_meter_traits < handle
         set_accuracy_override(obj, Accuracy_level);
         Accuracy_level = get_accuracy_level_oveeride(obj);
         [R_abs, Phi_deg] = get_R_Phi_override(obj);
-        [Max_amp, Max_freq] = get_max_amp_and_freq_override(obj);
+        [Min_amp, Max_amp, Min_freq, Max_freq] = get_max_amp_and_freq_override(obj);
     end
 
     methods (Access = public, Abstract)

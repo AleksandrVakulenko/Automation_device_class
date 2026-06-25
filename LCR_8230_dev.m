@@ -256,9 +256,9 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
             end
             Min_amp = 0.001; % FIXME: check this
-            Max_amp = 1+1e-9; % FIXME: check this
+            Max_amp = 1+2e-9; % FIXME: check this
             Min_freq = 10;
-            Max_freq = 30e6+1e-9; % FIXME: check this
+            Max_freq = 30e6+2e-9; % FIXME: check this
         end
         
     end

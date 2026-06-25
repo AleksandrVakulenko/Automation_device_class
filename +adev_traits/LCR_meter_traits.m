@@ -5,7 +5,7 @@ classdef LCR_meter_traits < handle
     methods (Access = public)
         function Freq_out = set_freq(obj, Freq)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
                 Freq (1,1) double {mustBeGreaterThan(Freq, 0)}
             end
             Freq_out = obj.set_freq_override(Freq);
@@ -13,7 +13,7 @@ classdef LCR_meter_traits < handle
 
         function Amp_out = set_amplitude(obj, Amp)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
                 Amp (1,1) double {mustBeGreaterThan(Amp, 0)}
             end
             Amp_out = obj.set_amplitude_override(Amp);
@@ -21,7 +21,7 @@ classdef LCR_meter_traits < handle
 
         function DC_bias_out = set_DC_bias(obj, DC_bias)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
                 DC_bias (1,1) double
             end
             DC_bias_out = obj.set_DC_bias_override(DC_bias);
@@ -29,7 +29,7 @@ classdef LCR_meter_traits < handle
 
         function set_accuracy_level(obj, Time_profile)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
                 Time_profile string {mustBeMember(Time_profile, ...
                     ["ultra_fast", "common", "fine", "most_accurate"])} = "common"
             end
@@ -48,14 +48,14 @@ classdef LCR_meter_traits < handle
     
         function Accuracy_level = get_accuracy_level(obj)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
             end
             Accuracy_level = obj.get_accuracy_level_oveeride();
         end
     
         function [R_abs, Phi_deg] = get_R_Phi(obj)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
             end
             [R_abs, Phi_deg] = obj.get_R_Phi_override();
         end
@@ -63,7 +63,7 @@ classdef LCR_meter_traits < handle
         function [R_abs, Phi_deg, R_abs_err, Phi_deg_err] = ...
                 get_R_Phi_with_errors(obj, Time_profile)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
                 Time_profile string {mustBeMember(Time_profile, ...
                     ["ultra_fast", "common", "fine", "most_accurate", ""])} = ""
             end
@@ -99,7 +99,7 @@ classdef LCR_meter_traits < handle
 
         function Limits = get_max_amp_and_freq(obj)
             arguments
-                obj LCR_meter_traits
+                obj adev_traits.LCR_meter_traits
             end
             [Min_amp, Max_amp, Min_freq, Max_freq] = obj.get_max_amp_and_freq_override();
             Limits.amp_min = Min_amp;

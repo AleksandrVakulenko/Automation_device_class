@@ -14,7 +14,7 @@ classdef Connector_board_traits < handle
     methods (Access = public)
         function set_connection_mode(obj, mode)
             arguments
-                obj Connector_board_traits
+                obj adev_traits.Connector_board_traits
                 mode {mustBeMember(mode, ["I2V", "LCR", "Bypass"])}
             end
             obj.set_mode_override(mode);

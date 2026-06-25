@@ -351,6 +351,17 @@ classdef Aster_dev < aDevice & ...
             obj.send_cmd(7, ArgA);
         end
 
+        function set_ADC_2_range(obj, Range)
+            arguments
+                obj
+                Range double {mustBeMember(Range, [6, 12])}
+            end
+            if Range == 12
+                obj.send_cmd(21, 1);
+            else
+                obj.send_cmd(21, 0);
+            end
+        end
     
         function freq = ADC_send_freq(obj, freq)
         arguments
@@ -660,8 +671,8 @@ classdef Aster_dev < aDevice & ...
             Unit = -1;
             multiplier = -1;
             Time = double(Full_time_stamp)*50e-6; % s % FIXME: magic constant
-            Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2?
-            Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1?
+            Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2 (yes)
+            Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1 (yes)
             % Device_state_byte = Device_state_byte;
         end
 
@@ -703,8 +714,7 @@ TS_epoch_rows = 4 - 1; % FIXME: magic constant
 TS_time_rows = (5:8) - 1; % FIXME: magic constant
 ADC1_argA_row = (9:12) - 1; % FIXME: magic constant
 ADC2_argB_row = (13:16) - 1;  % FIXME: magic constant
-ADC1_ref_voltage = 4.096*3; % FIXME: magic constant
-ADC2_ref_voltage = 4.096*3; % FIXME: magic constant
+
 
 %
 Device_state = Data_table(Device_state_rows, :);
@@ -720,11 +730,19 @@ Time_stamp_time = uint64(typecast(uint8(Time_stamp_time_part), 'uint32'));
 
 Full_time_stamp = Time_stamp_epoch*uint64(2^32) + Time_stamp_time;
 
+Device_state = uint8(Device_state);
+ADC_2_range_bit = bitand(Device_state, uint8(1));
+ADC_2_range_mult = 3*ones(size(Device_state));
+ADC_2_range_mult(ADC_2_range_bit == uint8(1)) = 1.5;
+
+ADC1_ref_voltage = 4.096*ADC_2_range_mult; % FIXME: magic constant
+ADC2_ref_voltage = 4.096*3; % FIXME: magic constant
+
 %
 ADC1_part = Data_table(ADC1_argA_row, :);
 ADC1_part = reshape(ADC1_part, [1 numel(ADC1_part)]);
 ADC_1_code = double(typecast(uint8(ADC1_part), 'int32'));
-ADC_1_voltage = ADC_1_code/2^17*ADC1_ref_voltage/10;
+ADC_1_voltage = ADC_1_code/2^17.*ADC1_ref_voltage/10;
 % ADC_1_voltage = ADC_1_code;
 
 ADC2_part = Data_table(ADC2_argB_row, :);

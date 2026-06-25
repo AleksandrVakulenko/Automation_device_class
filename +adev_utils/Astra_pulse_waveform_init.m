@@ -17,6 +17,29 @@ classdef Astra_pulse_waveform_init
             continuous logical
         end
 
+            if amp < 0
+                amp = -amp;
+            end
+            if amp > 10
+                amp = 10;
+            end
+
+            Max_bias = 10-amp;
+            
+            if abs(bias) > Max_bias
+                bias = sign(bias)*Max_bias;
+            end
+
+            % FIXME: delete this
+%             disp('---------------------------')
+%             disp('---------------------------')
+%             disp('---------------------------')
+%             disp(bias)
+%             disp('---------------------------')
+%             disp('---------------------------')
+%             disp('---------------------------')
+%             pause(0.5)
+
             switch pulse_type
                 case {"bipolar", "b"}
                     obj.pulse_type = 1;

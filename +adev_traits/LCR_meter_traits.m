@@ -76,11 +76,11 @@ classdef LCR_meter_traits < handle
                 case 1
                     N = 3;
                 case 2
-                    N = 5;
+                    N = 4;
                 case 3
-                    N = 7;
+                    N = 5;
                 case 4
-                    N = 15;
+                    N = 7;
                 otherwise
                     N = 3;
             end

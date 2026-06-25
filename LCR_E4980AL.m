@@ -239,9 +239,9 @@ classdef LCR_E4980AL < aDevice & adev_traits.LCR_meter_traits
                 case 2
                     obj.set_speed("medium", 3);
                 case 3
-                    obj.set_speed("long", 5);
+                    obj.set_speed("long", 4);
                 case 4
-                    obj.set_speed("long", 10);
+                    obj.set_speed("long", 7);
             end
         end
         

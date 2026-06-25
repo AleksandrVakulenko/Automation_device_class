@@ -264,10 +264,10 @@ classdef LCR_E4980AL < aDevice & adev_traits.LCR_meter_traits
             arguments
                 obj LCR_E4980AL
             end
-            Min_amp = 0.001; % FIXME: check this
-            Max_amp = 2;
+            Min_amp = 0.0;
+            Max_amp = 2+1e-9;
             Min_freq = 20;
-            Max_freq = 300e3;
+            Max_freq = 300e3+1e-9;
         end
         
     end

@@ -671,8 +671,8 @@ classdef Aster_dev < aDevice & ...
             Unit = -1;
             multiplier = -1;
             Time = double(Full_time_stamp)*50e-6; % s % FIXME: magic constant
-            Voltage1 = ADC_2_voltage; % [V] / NOTE: ADC1 ch2 (yes)
-            Voltage2 = ADC_1_voltage; % [V] / NOTE: ADC2 is ch1 (yes)
+            Voltage1 = ADC_1_voltage; % [V]
+            Voltage2 = ADC_2_voltage; % [V]
             % Device_state_byte = Device_state_byte;
         end
 
@@ -735,21 +735,22 @@ ADC_2_range_bit = bitand(Device_state, uint8(1));
 ADC_2_range_mult = 3*ones(size(Device_state));
 ADC_2_range_mult(ADC_2_range_bit == uint8(1)) = 1.5;
 
-ADC1_ref_voltage = 4.096*ADC_2_range_mult; % FIXME: magic constant
-ADC2_ref_voltage = 4.096*3; % FIXME: magic constant
 
-%
-ADC1_part = Data_table(ADC1_argA_row, :);
+ADC1_ref_voltage = 4.096*3; % FIXME: magic constant
+ADC2_ref_voltage = 4.096*ADC_2_range_mult;
+
+ADC1_part = Data_table(ADC2_argB_row, :);
 ADC1_part = reshape(ADC1_part, [1 numel(ADC1_part)]);
 ADC_1_code = double(typecast(uint8(ADC1_part), 'int32'));
-ADC_1_voltage = ADC_1_code/2^17.*ADC1_ref_voltage/10;
+ADC_1_voltage = ADC_1_code/2^17*ADC1_ref_voltage/10;
 % ADC_1_voltage = ADC_1_code;
 
-ADC2_part = Data_table(ADC2_argB_row, :);
-ADC2_part = reshape(ADC2_part, [1 numel(ADC1_part)]);
+ADC2_part = Data_table(ADC1_argA_row, :);
+ADC2_part = reshape(ADC2_part, [1 numel(ADC2_part)]);
 ADC_2_code = double(typecast(uint8(ADC2_part), 'int32'));
-ADC_2_voltage = ADC_2_code/2^17*ADC2_ref_voltage/10;
+ADC_2_voltage = ADC_2_code/2^17.*ADC2_ref_voltage/10;
 % ADC_2_voltage = ADC_2_code;
+
 
 end
 

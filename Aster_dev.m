@@ -250,7 +250,7 @@ classdef Aster_dev < aDevice & ...
                     warning("ERROR! LONG PACKET >1024 bytes")
                 else
                     obj.con.send(uint8(CMD_packet));
-                    Delay_time = N*10/9600*2.5
+                    Delay_time = N*10/9600*2.5;
                     if Delay_time < 0.015
                         Delay_time = 0.015;
                     end

@@ -242,7 +242,7 @@ classdef Aster_dev < aDevice & ...
                 warning('long CMD ignored/ wrong CMD code')
             else
                 [d_bytes, size_bytes] = convert2bytes(data);
-                [~, checksum_bytes] = FE_loop_utils.adler32(d_bytes);
+                [~, checksum_bytes] = adler32(d_bytes);
 %                 checksum_bytes(1) = 2;
                 CMD_packet = [uint8(cmd) uint8(0) uint8(0) size_bytes checksum_bytes d_bytes];
                 N = numel(CMD_packet);

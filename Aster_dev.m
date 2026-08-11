@@ -125,13 +125,13 @@ classdef Aster_dev < aDevice & ...
 
         function [Time_data, Voltage, Current, Current_OVLD] = get_CV(obj)
             req = false;
-            [Current, Time_data, Current_OVLD, Voltage] = obj.read_data(req);
+            [Current, Time_data, Current_OVLD, Voltage, ~, ~, Overrange] = obj.read_data(req);
             Current = -Current;
         end
 
-        function [Time_data, Voltage1, Voltage2, Scale] = get_VV(obj)
+        function [Time_data, Voltage1, Voltage2, Scale, Overrange] = get_VV(obj)
             req = false;
-            [~, Time_data, ~, Voltage1, Voltage2, Scale] = obj.read_data(req);
+            [~, Time_data, ~, Voltage1, Voltage2, Scale, Overrange] = obj.read_data(req);
         end
 
         function CMD_data_stream(obj, arg)
@@ -595,8 +595,8 @@ classdef Aster_dev < aDevice & ...
         end
 
 
-        function [Current, Time_data, OVLD, Voltage1, Voltage2, Scale] = ...
-                read_data(obj, req)
+        function [Current, Time_data, OVLD, Voltage1, Voltage2, ...
+			Scale, Overrange] = read_data(obj, req)
             arguments
                 obj
                 req = true
@@ -605,7 +605,7 @@ classdef Aster_dev < aDevice & ...
                 obj.CMD_data_req();
                 pause(0.01);
             end
-            [Time, Voltage1, Voltage2, ~, ~, ~] = high_level_read(obj);
+            [Time, Voltage1, Voltage2, ~, ~, ~, Overrange] = high_level_read(obj);
             Time_data = Time;
             if any(abs(Voltage2) > 5)
                 OVLD = true;
@@ -618,7 +618,7 @@ classdef Aster_dev < aDevice & ...
 
 
         function [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
-                Relay_state_byte, Device_state_byte] = debug_read(obj)
+                Relay_state_byte, Device_state_byte, Overrange] = debug_read(obj)
 
             number_of_bytes = 16; % NOTE: device const
             wait_time = 0.1;  % NOTE: const
@@ -649,22 +649,23 @@ classdef Aster_dev < aDevice & ...
                 table = reshape(Data, [number_of_bytes numel(Data)/number_of_bytes]);
                 [Data_table, CMD_table] = split_tables(table);
                 [Device_state_byte, Relay_state_byte, Full_time_stamp, ...
-                    ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table);
+                    ADC_1_voltage, ADC_2_voltage, Overrange] = parse_data_table(Data_table);
             else
                 Full_time_stamp = [];
                 ADC_1_voltage = [];
                 ADC_2_voltage = [];
                 Relay_state_byte = [];
                 Device_state_byte = [];
+				Overrange = [];
             end
 
         end
 
         function [Time, Voltage1, Voltage2, Unit, Relay_state, ...
-                Device_state_byte] = high_level_read(obj)
+                Device_state_byte, Overrange] = high_level_read(obj)
 
             [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
-                Relay_state_byte, Device_state_byte] = obj.debug_read;
+                Relay_state_byte, Device_state_byte, Overrange] = obj.debug_read;
             % FIXME: add filtering
             % [Relay_state, Unit, multiplier] = relay_byte_parse(Relay_state_byte);
             Relay_state = -1;
@@ -706,7 +707,7 @@ Data_table(1,:) = [];
 end
 
 function [Device_state, Relay_state_byte, Full_time_stamp, ...
-    ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table)
+    ADC_1_voltage, ADC_2_voltage, Overrange] = parse_data_table(Data_table)
 
 Device_state_rows = 2 - 1; % FIXME: magic constant
 Relay_state_rows = 3 - 1; % FIXME: magic constant
@@ -735,6 +736,8 @@ ADC_2_range_bit = bitand(Device_state, uint8(1));
 ADC_2_range_mult = 3*ones(size(Device_state));
 ADC_2_range_mult(ADC_2_range_bit == uint8(1)) = 1.5;
 
+Overrange.adc_1 = bitand(Device_state, uint8(2)) > 0;
+Overrange.adc_2 = bitand(Device_state, uint8(4)) > 0;
 
 ADC1_ref_voltage = 4.096*3; % FIXME: magic constant
 ADC2_ref_voltage = 4.096*ADC_2_range_mult;

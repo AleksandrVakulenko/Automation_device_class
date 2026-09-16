@@ -30,7 +30,13 @@ classdef Aster_dev < aDevice & ...
             arguments
                 COM_port
             end
-            [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            if ispc
+                [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            elseif isunix
+                Full_address = COM_port; % FIXME: debug
+            else
+                error("Unsupported platform")
+            end
             obj@aDevice(Connector_COM_USB(Full_address));
             pause(0.1);
             obj.init_device();

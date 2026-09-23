@@ -240,7 +240,7 @@ classdef Aster_dev < aDevice & ...
             arg_b_bytes = flip(typecast(uint32(arg_b), 'uint8'));
             CMD_packet = [uint8(cmd) arg_a_bytes arg_b_bytes];
             obj.con.send(uint8(CMD_packet));
-            pause(0.02);
+            pause(0.1);
         end
         
         function send_long_cmd(obj, cmd, data)
@@ -256,9 +256,9 @@ classdef Aster_dev < aDevice & ...
                     warning("ERROR! LONG PACKET >1024 bytes")
                 else
                     obj.con.send(uint8(CMD_packet));
-                    Delay_time = N*10/9600*2.5;
-                    if Delay_time < 0.015
-                        Delay_time = 0.015;
+                    Delay_time = N*10/9600*5 + 0.05;
+                    if Delay_time < 0.1
+                        Delay_time = 0.1;
                     end
                     pause(Delay_time);
                 end

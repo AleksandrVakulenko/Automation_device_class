@@ -14,6 +14,8 @@
 %  1) do refactor
 %  2) 
 
+% FIXME: I dont like initiate and set_mode functions
+
 classdef Aster_dev < aDevice & ...
                      adev_traits.I2V_converter_traits & ...
                      adev_traits.Connector_board_traits
@@ -184,11 +186,13 @@ classdef Aster_dev < aDevice & ...
 
     methods (Access = public) % NOTE: override
         function initiate(obj)
+            klog.disp("ASTER INIT", "debug_full", "red"); % FIXME: delete
             obj.FB_opamp_connect("enable");
             obj.Current_direction("I2V");
         end
 
         function terminate(obj)
+            klog.disp("ASTER TERMINATE", "debug_full", "red"); % FIXME: delete
             obj.FB_opamp_connect("disable");
             obj.Current_direction("GND");
             obj.FB_opamp_select("AD8065");
@@ -197,7 +201,7 @@ classdef Aster_dev < aDevice & ...
             obj.cap_short(1);
         end
 
-        function set_mode(obj, mode)
+        function set_mode(obj, mode) % FIXME: rename to set_connection_mode
         arguments
             obj
             mode {mustBeMember(mode, ["I2V", "LCR", "Bypass"])}

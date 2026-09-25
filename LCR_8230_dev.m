@@ -27,7 +27,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                     25, 26, 27, 28, 29, 30])}
             end
             % FIXME: replace by Connector_VISA 
-            obj@aDevice(Connector_GPIB(GPIB_num))
+            obj@aDevice(Connector_GPIB(GPIB_num, "timeout", 1)); % FIXME: timeout debug value
             obj.Accuracy_level = 1;
             obj.set_measure_speed("fast"); % FIXME: replace
             obj.terminate();
@@ -38,13 +38,13 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     methods (Access = public) % NOTE: override (not now)
         function initiate(obj)
             obj.set_out_param_to_Z_DEG();
-            obj.set_amplitude(0.01); % FIXME: is it min amp?
-            obj.set_freq(30e6);
+            obj.set_amplitude2(0.01); % FIXME: is it min amp?
+            obj.set_freq2(30e6);
         end
 
         function terminate(obj)
-            obj.set_amplitude(0.01);
-            obj.set_freq(30e6);
+            obj.set_amplitude2(0.01);
+            obj.set_freq2(30e6);
         end
     end
 
@@ -80,7 +80,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
 
     %---------- SET CMD public block ----------
     methods (Access = public)
-        function set_amplitude(obj, amp)
+        function set_amplitude2(obj, amp)
             arguments
                 obj
                 amp {mustBeInRange(amp, 0, 1)} % FIXME: is max amp == 1?
@@ -90,7 +90,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             obj.send_and_log(CMD);
         end
 
-        function set_freq(obj, freq)
+        function set_freq2(obj, freq)
             arguments
                 obj
                 freq {mustBeInRange(freq, 10, 30e6)}
@@ -146,7 +146,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
 
         function [RDC, Z, DEG, resp] = measure_and_read(obj)
             % NOTE: legacy function
-            obj.query_and_log('*TRG');
+            obj.send_and_log('*TRG');
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
@@ -169,7 +169,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
 
         function [RDC, Z, DEG, resp] = measure_and_read_Z_DEG(obj)
             obj.set_out_param_to_Z_DEG() % NOTE: every time
-            obj.query_and_log('*TRG');
+            obj.send_and_log('*TRG');
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
@@ -198,7 +198,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Freq double
             end
-            obj.set_freq(Freq);
+            obj.set_freq2(Freq);
             Freq_out = Freq; % FIXME: debug mode
         end
 
@@ -207,7 +207,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Amp double
             end
-            obj.set_amplitude(Amp);
+            obj.set_amplitude2(Amp);
             Amp_out = Amp; % FIXME: debug mode until fix 
         end
 

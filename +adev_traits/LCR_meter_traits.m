@@ -50,7 +50,7 @@ classdef LCR_meter_traits < handle
             arguments
                 obj adev_traits.LCR_meter_traits
             end
-            Accuracy_level = obj.get_accuracy_level_oveeride();
+            Accuracy_level = obj.get_accuracy_level_override();
         end
     
         function [R_abs, Phi_deg] = get_R_Phi(obj)
@@ -73,13 +73,13 @@ classdef LCR_meter_traits < handle
             Accuracy_level = obj.get_accuracy_level();
             % FIXME: need tests
             switch Accuracy_level
-                case 1
+                case 1 % ultra_fast
                     N = 3;
-                case 2
+                case 2 % common
                     N = 4;
-                case 3
+                case 3 % fine
                     N = 5;
-                case 4
+                case 4 % most_accurate
                     N = 7;
                 otherwise
                     N = 3;
@@ -114,7 +114,7 @@ classdef LCR_meter_traits < handle
         Amp_out = set_amplitude_override(obj, Amp);
         DC_bias_out = set_DC_bias_override(obj, DC_bias);
         set_accuracy_override(obj, Accuracy_level);
-        Accuracy_level = get_accuracy_level_oveeride(obj);
+        Accuracy_level = get_accuracy_level_override(obj);
         [R_abs, Phi_deg] = get_R_Phi_override(obj);
         [Min_amp, Max_amp, Min_freq, Max_freq] = get_max_amp_and_freq_override(obj);
     end

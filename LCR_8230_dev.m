@@ -38,13 +38,13 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     methods (Access = public) % NOTE: override (not now)
         function initiate(obj)
             obj.set_out_param_to_Z_DEG();
-            obj.set_amplitude2(0.01); % FIXME: is it min amp?
-            obj.set_freq2(30e6);
+            obj.set_amplitude_internal(0.01); % FIXME: is it min amp?
+            obj.set_freq_internal(30e6);
         end
 
         function terminate(obj)
-            obj.set_amplitude2(0.01);
-            obj.set_freq2(30e6);
+            obj.set_amplitude_internal(0.01);
+            obj.set_freq_internal(30e6);
         end
     end
 
@@ -78,9 +78,8 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     end
 
 
-    %---------- SET CMD public block ----------
-    methods (Access = public)
-        function set_amplitude2(obj, amp)
+    methods (Access = private)
+        function set_amplitude_internal(obj, amp)
             arguments
                 obj
                 amp {mustBeInRange(amp, 0, 1)} % FIXME: is max amp == 1?
@@ -90,7 +89,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             obj.send_and_log(CMD);
         end
 
-        function set_freq2(obj, freq)
+        function set_freq_internal(obj, freq)
             arguments
                 obj
                 freq {mustBeInRange(freq, 10, 30e6)}
@@ -99,6 +98,10 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             obj.send_and_log(CMD);
         end
 
+    end
+
+    %---------- SET CMD public block ----------
+    methods (Access = public)
         function set_out_param(obj)
             arguments
                 obj
@@ -198,7 +201,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Freq double
             end
-            obj.set_freq2(Freq);
+            obj.set_freq_internal(Freq);
             Freq_out = Freq; % FIXME: debug mode
         end
 
@@ -207,7 +210,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Amp double
             end
-            obj.set_amplitude2(Amp);
+            obj.set_amplitude_internal(Amp);
             Amp_out = Amp; % FIXME: debug mode until fix 
         end
 
@@ -237,7 +240,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             end
         end
 
-        function Accuracy_level = get_accuracy_level_oveeride(obj)
+        function Accuracy_level = get_accuracy_level_override(obj)
             arguments
                 obj LCR_8230_dev
             end

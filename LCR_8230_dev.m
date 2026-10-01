@@ -150,6 +150,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
         function [RDC, Z, DEG, resp] = measure_and_read(obj)
             % NOTE: legacy function
             obj.send_and_log('*TRG');
+            pause(0.2); % FIXME: wait result debug
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
@@ -173,6 +174,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
         function [RDC, Z, DEG, resp] = measure_and_read_Z_DEG(obj)
             obj.set_out_param_to_Z_DEG() % NOTE: every time
             obj.send_and_log('*TRG');
+            pause(0.2); % FIXME: wait result debug
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");

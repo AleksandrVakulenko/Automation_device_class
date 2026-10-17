@@ -9,27 +9,40 @@
 % Description: LCR Meter
 % 
 % ------------
+% Class Constructor argument may be GPIB address, serial number or empty
+% Examples:
+% Empty:
+%   []
+% Serial number: (types: <string/char>)
+%   FIXME: add example
+% GPIB number: (types: any(?) numerical)
+%   14 
+% GPIB string: (types: <string/char>)
+%   "GPIB14" 
+%   "GPIB0::14"
+%   "GPIB1::14"
+%   "GPIB0::14::INSTR"
 
 % TODO:
 % 1) add more functions
 
 classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     properties(Access = private)
+        Serial_number = [];
         Accuracy_level = [];
     end
 
     methods (Access = public)
-        function obj = LCR_8230_dev(GPIB_num)
+        function obj = LCR_8230_dev(GPIB_string)
             arguments
-                GPIB_num {con_utils.GPIB_validation(GPIB_num), ...
-                    mustBeMember(GPIB_num, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
-                    25, 26, 27, 28, 29, 30])}
+                GPIB_string = []
             end
-            % FIXME: replace by Connector_VISA 
-            obj@aDevice(Connector_GPIB(GPIB_num, "timeout", 1)); % FIXME: timeout debug value
+            [visa_addr, SN] = con_utils.VISA_str2gpib(GPIB_string, "XXXXX", ...
+                ["GPIB"]);
+            obj@aDevice(Connector_VISA(visa_addr, 'timeout', 2));
+            obj.Serial_number = SN;            
             obj.Accuracy_level = 1;
-            obj.set_measure_speed("fast"); % FIXME: replace
+            obj.set_accuracy_override(obj.Accuracy_level);
             obj.terminate();
         end
     end

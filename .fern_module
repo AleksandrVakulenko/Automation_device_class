@@ -1,8 +1,9 @@
-name:
-aDevice
-
-dependencies:
-Connector
-Debug_msg
-
-info:
+{
+  "name": "aDevice",
+  "dependecies": [
+    "Connector",
+    "Debug_msg"
+  ],
+  "info": "Collection of classes for different measurment devices",
+  "Tegs": "Function generator; Electrometer; LCR meter; Lock-in amplifier"
+}

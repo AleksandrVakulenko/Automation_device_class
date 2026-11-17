@@ -9,27 +9,40 @@
 % Description: LCR Meter
 % 
 % ------------
+% Class Constructor argument may be GPIB address, serial number or empty
+% Examples:
+% Empty:
+%   []
+% Serial number: (types: <string/char>)
+%   FIXME: add example
+% GPIB number: (types: any(?) numerical)
+%   14 
+% GPIB string: (types: <string/char>)
+%   "GPIB14" 
+%   "GPIB0::14"
+%   "GPIB1::14"
+%   "GPIB0::14::INSTR"
 
 % TODO:
 % 1) add more functions
 
 classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     properties(Access = private)
+        Serial_number = [];
         Accuracy_level = [];
     end
 
     methods (Access = public)
-        function obj = LCR_8230_dev(GPIB_num)
+        function obj = LCR_8230_dev(GPIB_string)
             arguments
-                GPIB_num {con_utils.GPIB_validation(GPIB_num), ...
-                    mustBeMember(GPIB_num, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...
-                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, ...
-                    25, 26, 27, 28, 29, 30])}
+                GPIB_string = []
             end
-            % FIXME: replace by Connector_VISA 
-            obj@aDevice(Connector_GPIB(GPIB_num))
+            [visa_addr, SN] = con_utils.VISA_str2gpib(GPIB_string, "XXXXX", ...
+                ["GPIB"]);
+            obj@aDevice(Connector_VISA(visa_addr, 'timeout', 2));
+            obj.Serial_number = SN;            
             obj.Accuracy_level = 1;
-            obj.set_measure_speed("fast"); % FIXME: replace
+            obj.set_accuracy_override(obj.Accuracy_level);
             obj.terminate();
         end
     end
@@ -38,13 +51,13 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     methods (Access = public) % NOTE: override (not now)
         function initiate(obj)
             obj.set_out_param_to_Z_DEG();
-            obj.set_amplitude(0.01); % FIXME: is it min amp?
-            obj.set_freq(30e6);
+            obj.set_amplitude_internal(0.01); % FIXME: is it min amp?
+            obj.set_freq_internal(30e6);
         end
 
         function terminate(obj)
-            obj.set_amplitude(0.01);
-            obj.set_freq(30e6);
+            obj.set_amplitude_internal(0.01);
+            obj.set_freq_internal(30e6);
         end
     end
 
@@ -78,9 +91,8 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
     end
 
 
-    %---------- SET CMD public block ----------
-    methods (Access = public)
-        function set_amplitude(obj, amp)
+    methods (Access = private)
+        function set_amplitude_internal(obj, amp)
             arguments
                 obj
                 amp {mustBeInRange(amp, 0, 1)} % FIXME: is max amp == 1?
@@ -90,7 +102,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             obj.send_and_log(CMD);
         end
 
-        function set_freq(obj, freq)
+        function set_freq_internal(obj, freq)
             arguments
                 obj
                 freq {mustBeInRange(freq, 10, 30e6)}
@@ -99,6 +111,10 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             obj.send_and_log(CMD);
         end
 
+    end
+
+    %---------- SET CMD public block ----------
+    methods (Access = public)
         function set_out_param(obj)
             arguments
                 obj
@@ -146,7 +162,8 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
 
         function [RDC, Z, DEG, resp] = measure_and_read(obj)
             % NOTE: legacy function
-            obj.query_and_log('*TRG');
+            obj.send_and_log('*TRG');
+            pause(0.2); % FIXME: wait result debug
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
@@ -169,7 +186,8 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
 
         function [RDC, Z, DEG, resp] = measure_and_read_Z_DEG(obj)
             obj.set_out_param_to_Z_DEG() % NOTE: every time
-            obj.query_and_log('*TRG');
+            obj.send_and_log('*TRG');
+            pause(0.2); % FIXME: wait result debug
             resp = obj.query_and_log(':FETCh?');
             try
                 [data, num] = sscanf(resp, "%f, %f, %f, %f");
@@ -198,7 +216,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Freq double
             end
-            obj.set_freq(Freq);
+            obj.set_freq_internal(Freq);
             Freq_out = Freq; % FIXME: debug mode
         end
 
@@ -207,7 +225,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
                 obj LCR_8230_dev
                 Amp double
             end
-            obj.set_amplitude(Amp);
+            obj.set_amplitude_internal(Amp);
             Amp_out = Amp; % FIXME: debug mode until fix 
         end
 
@@ -237,7 +255,7 @@ classdef LCR_8230_dev < aDevice & adev_traits.LCR_meter_traits
             end
         end
 
-        function Accuracy_level = get_accuracy_level_oveeride(obj)
+        function Accuracy_level = get_accuracy_level_override(obj)
             arguments
                 obj LCR_8230_dev
             end

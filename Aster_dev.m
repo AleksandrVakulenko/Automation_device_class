@@ -14,6 +14,8 @@
 %  1) do refactor
 %  2) 
 
+% FIXME: I dont like initiate and set_mode functions
+
 classdef Aster_dev < aDevice & ...
                      adev_traits.I2V_converter_traits & ...
                      adev_traits.Connector_board_traits
@@ -30,7 +32,13 @@ classdef Aster_dev < aDevice & ...
             arguments
                 COM_port
             end
-            [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            if ispc
+                [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            elseif isunix
+                Full_address = COM_port; % FIXME: debug
+            else
+                error("Unsupported platform")
+            end
             obj@aDevice(Connector_COM_USB(Full_address));
             pause(0.1);
             obj.init_device();
@@ -125,13 +133,13 @@ classdef Aster_dev < aDevice & ...
 
         function [Time_data, Voltage, Current, Current_OVLD] = get_CV(obj)
             req = false;
-            [Current, Time_data, Current_OVLD, Voltage] = obj.read_data(req);
+            [Current, Time_data, Current_OVLD, Voltage, ~, ~, Overrange] = obj.read_data(req);
             Current = -Current;
         end
 
-        function [Time_data, Voltage1, Voltage2, Scale] = get_VV(obj)
+        function [Time_data, Voltage1, Voltage2, Scale, Overrange] = get_VV(obj)
             req = false;
-            [~, Time_data, ~, Voltage1, Voltage2, Scale] = obj.read_data(req);
+            [~, Time_data, ~, Voltage1, Voltage2, Scale, Overrange] = obj.read_data(req);
         end
 
         function CMD_data_stream(obj, arg)
@@ -178,11 +186,13 @@ classdef Aster_dev < aDevice & ...
 
     methods (Access = public) % NOTE: override
         function initiate(obj)
+            klog.disp("ASTER INIT", "debug_full", "red"); % FIXME: delete
             obj.FB_opamp_connect("enable");
             obj.Current_direction("I2V");
         end
 
         function terminate(obj)
+            klog.disp("ASTER TERMINATE", "debug_full", "red"); % FIXME: delete
             obj.FB_opamp_connect("disable");
             obj.Current_direction("GND");
             obj.FB_opamp_select("AD8065");
@@ -191,7 +201,7 @@ classdef Aster_dev < aDevice & ...
             obj.cap_short(1);
         end
 
-        function set_mode(obj, mode)
+        function set_mode(obj, mode) % FIXME: rename to set_connection_mode
         arguments
             obj
             mode {mustBeMember(mode, ["I2V", "LCR", "Bypass"])}
@@ -234,7 +244,7 @@ classdef Aster_dev < aDevice & ...
             arg_b_bytes = flip(typecast(uint32(arg_b), 'uint8'));
             CMD_packet = [uint8(cmd) arg_a_bytes arg_b_bytes];
             obj.con.send(uint8(CMD_packet));
-            pause(0.02);
+            pause(0.1);
         end
         
         function send_long_cmd(obj, cmd, data)
@@ -242,7 +252,7 @@ classdef Aster_dev < aDevice & ...
                 warning('long CMD ignored/ wrong CMD code')
             else
                 [d_bytes, size_bytes] = convert2bytes(data);
-                [~, checksum_bytes] = FE_loop_utils.adler32(d_bytes);
+                [~, checksum_bytes] = adler32(d_bytes);
 %                 checksum_bytes(1) = 2;
                 CMD_packet = [uint8(cmd) uint8(0) uint8(0) size_bytes checksum_bytes d_bytes];
                 N = numel(CMD_packet);
@@ -250,9 +260,9 @@ classdef Aster_dev < aDevice & ...
                     warning("ERROR! LONG PACKET >1024 bytes")
                 else
                     obj.con.send(uint8(CMD_packet));
-                    Delay_time = N*10/9600*2.5;
-                    if Delay_time < 0.015
-                        Delay_time = 0.015;
+                    Delay_time = N*10/9600*5 + 0.05;
+                    if Delay_time < 0.1
+                        Delay_time = 0.1;
                     end
                     pause(Delay_time);
                 end
@@ -595,8 +605,8 @@ classdef Aster_dev < aDevice & ...
         end
 
 
-        function [Current, Time_data, OVLD, Voltage1, Voltage2, Scale] = ...
-                read_data(obj, req)
+        function [Current, Time_data, OVLD, Voltage1, Voltage2, ...
+			Scale, Overrange] = read_data(obj, req)
             arguments
                 obj
                 req = true
@@ -605,7 +615,7 @@ classdef Aster_dev < aDevice & ...
                 obj.CMD_data_req();
                 pause(0.01);
             end
-            [Time, Voltage1, Voltage2, ~, ~, ~] = high_level_read(obj);
+            [Time, Voltage1, Voltage2, ~, ~, ~, Overrange] = high_level_read(obj);
             Time_data = Time;
             if any(abs(Voltage2) > 5)
                 OVLD = true;
@@ -618,7 +628,7 @@ classdef Aster_dev < aDevice & ...
 
 
         function [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
-                Relay_state_byte, Device_state_byte] = debug_read(obj)
+                Relay_state_byte, Device_state_byte, Overrange] = debug_read(obj)
 
             number_of_bytes = 16; % NOTE: device const
             wait_time = 0.1;  % NOTE: const
@@ -649,22 +659,23 @@ classdef Aster_dev < aDevice & ...
                 table = reshape(Data, [number_of_bytes numel(Data)/number_of_bytes]);
                 [Data_table, CMD_table] = split_tables(table);
                 [Device_state_byte, Relay_state_byte, Full_time_stamp, ...
-                    ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table);
+                    ADC_1_voltage, ADC_2_voltage, Overrange] = parse_data_table(Data_table);
             else
                 Full_time_stamp = [];
                 ADC_1_voltage = [];
                 ADC_2_voltage = [];
                 Relay_state_byte = [];
                 Device_state_byte = [];
+				Overrange = [];
             end
 
         end
 
         function [Time, Voltage1, Voltage2, Unit, Relay_state, ...
-                Device_state_byte] = high_level_read(obj)
+                Device_state_byte, Overrange] = high_level_read(obj)
 
             [Full_time_stamp, ADC_1_voltage, ADC_2_voltage, ...
-                Relay_state_byte, Device_state_byte] = obj.debug_read;
+                Relay_state_byte, Device_state_byte, Overrange] = obj.debug_read;
             % FIXME: add filtering
             % [Relay_state, Unit, multiplier] = relay_byte_parse(Relay_state_byte);
             Relay_state = -1;
@@ -706,7 +717,7 @@ Data_table(1,:) = [];
 end
 
 function [Device_state, Relay_state_byte, Full_time_stamp, ...
-    ADC_1_voltage, ADC_2_voltage] = parse_data_table(Data_table)
+    ADC_1_voltage, ADC_2_voltage, Overrange] = parse_data_table(Data_table)
 
 Device_state_rows = 2 - 1; % FIXME: magic constant
 Relay_state_rows = 3 - 1; % FIXME: magic constant
@@ -735,6 +746,8 @@ ADC_2_range_bit = bitand(Device_state, uint8(1));
 ADC_2_range_mult = 3*ones(size(Device_state));
 ADC_2_range_mult(ADC_2_range_bit == uint8(1)) = 1.5;
 
+Overrange.adc_1 = bitand(Device_state, uint8(2)) > 0;
+Overrange.adc_2 = bitand(Device_state, uint8(4)) > 0;
 
 ADC1_ref_voltage = 4.096*3; % FIXME: magic constant
 ADC2_ref_voltage = 4.096*ADC_2_range_mult;

@@ -181,8 +181,8 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
 
         function set_KPID(obj, kP, kI, kD)
             obj.set_KP(kP);
-            obj.set_KP(kI);
-            obj.set_KP(kD);
+            obj.set_KI(kI);
+            obj.set_KD(kD);
         end
 
         function set_heater_mode(obj, mode)

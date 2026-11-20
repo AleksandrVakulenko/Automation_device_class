@@ -245,7 +245,7 @@ classdef LCR_E4980AL < aDevice & adev_traits.LCR_meter_traits
             end
         end
         
-        function Accuracy_level = get_accuracy_level_oveeride(obj)
+        function Accuracy_level = get_accuracy_level_override(obj)
             arguments
                 obj LCR_E4980AL
             end

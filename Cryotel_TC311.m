@@ -1,65 +1,71 @@
+% Date: 2026.11.20
+% Author: A. V. Deyneka, A. F. Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Class for instrument control>
+% Manufacturer: https://cryotel.ru/
+% Model: Temp controller TC311
+% Description: Single channel temperature controller
+%
+% ------------
 
-classdef Cryotel_TC311 < handle
+% TODO:
+% 1) 
+% 2) 
+% 3) 
+% 4)
+
+
+classdef Cryotel_TC311 < aDevice
     properties
-        SerialObj
-        BaudRate = 9600
+        % FIXME: empty
     end
 
     methods (Access = public)
-        function obj = Cryotel_TC311(COM_number)
+        function obj = Cryotel_TC311(COM_port)
             arguments
-                COM_number
+                COM_port
             end
-            obj.SerialObj = serialport(COM_number, obj.BaudRate);
-            flush(obj.SerialObj);
-            disp(['TController Cryotel TC311 connected at port: ' char(COM_number)])
+            [~, Full_address] = con_utils.VISA_parse_COM_string(COM_port);
+            obj@aDevice(Connector_COM_USB(Full_address));
+            disp(['TController Cryotel TC311 connected at port: ' char(Full_address)])
         end
 
         function delete(obj)
-            if ~isempty(obj.SerialObj) && isvalid(obj.SerialObj)
-                delete(obj.SerialObj);
-            end
+            % nothing to do here
         end
 
+% NOTE: low level interaction
         function flush(obj)
-            flush(obj.SerialObj);
+            % FIXME: remove from public methods
+            obj.flush_con(); % method from aDevice
         end
 
         function resp = read(obj)
-            try
-                resp = readline(obj.SerialObj);
-            catch ME
-                error('CryoTel:ReadFailed', 'Read error: %s', ME.message);
-            end
-            resp = erase(string(resp), [char(13), newline, '"']); 
-            resp = strtrim(resp);
-            if strlength(resp) == 0
-                error('CryoTel:EmptyResponse', 'EmptyResponse');
-            end
+            % FIXME: remove from public methods
+            resp = obj.read_and_log(); % method from aDevice
         end
 
         function send(obj, CMD)
-            writeline(obj.SerialObj, CMD);
-            if ~(isstring(CMD) || ischar(CMD))
-                error("CryoTel:InvalidCommand", ...
-                "CMD must be string or char");
-            end
-
+            % FIXME: remove from public methods
             if strlength(string(CMD)) == 0
                 error("CryoTel:EmptyCommand", "CMD couldn't be empty");
             end
+            obj.send_and_log(CMD); % method from aDevice
         end
 
         function resp = query(obj, CMD)
-            obj.send(CMD);
-            resp = obj.read();
+            % FIXME: remove from public methods
+            resp = obj.query_and_log(CMD); % method from aDevice
+        end
+% ---------------------------
+
+% NOTE: GET CMD public block ----------
+        function resp_str = get_IDN(obj)
+            resp_str = obj.query("*IDN?");
         end
 
-        function resp = get_IDN(obj)
-            resp = obj.query("*IDN?");
-        end
-
-    %---------- GET CMD public block ----------
         function temp = get_temperature(obj)
             resp = obj.query("MEASure:TEMPerature?");
             [v, i] = sscanf(resp, '%f');
@@ -121,9 +127,9 @@ classdef Cryotel_TC311 < handle
             CMD = 'HEATer:CURRent?';
             resp = obj.query(CMD); %A
         end        
+% -------------------------------------
 
-
-    %---------- SET CMD public block ----------
+% NOTE: SET CMD public block ----------
         function set_target_temperature(obj, trg_temp)
             CMD = "PID:TEMPerature:TARGet " + num2str(trg_temp);
             obj.send(CMD)
@@ -214,9 +220,11 @@ classdef Cryotel_TC311 < handle
             pause(pause_constant);
             obj.get_heater_current; 
         end
+% -------------------------------------
 
-    end
-end
+    end % methods
+
+end % classdef
 
 
 

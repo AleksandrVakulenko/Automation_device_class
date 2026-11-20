@@ -59,6 +59,18 @@ classdef Cryotel_TC311 < aDevice
             % FIXME: remove from public methods
             resp = obj.query_and_log(CMD); % method from aDevice
         end
+
+        function value = query_and_scan_one_value(obj, CMD)
+            arguments
+                obj
+                CMD (1,1) string
+            end
+            resp = obj.query(CMD);
+            [value, i] = sscanf(resp, '%f', 1);
+            if i ~= 1 || isempty(value)
+                error('scanf error');
+            end
+        end
 % ---------------------------
 
 % NOTE: GET CMD public block ----------
@@ -67,66 +79,65 @@ classdef Cryotel_TC311 < aDevice
         end
 
         function temp = get_temperature(obj)
-            resp = obj.query("MEASure:TEMPerature?");
-            [v, i] = sscanf(resp, '%f');
-            if i ~= 1
-                error('scanf error');
+            temp = obj.query_and_scan_one_value("MEASure:TEMPerature?");
+        end
+
+        function res = get_resistance(obj)
+            res = obj.query_and_scan_one_value("MEASure:RESistance?");
+        end
+
+        function temp = get_target_temperature(obj)
+            obj.flush; % FIXME: why?
+            temp = obj.query_and_scan_one_value("PID:TEMPerature:TARGet?");
+        end
+
+        function value = get_PID_parameters(obj, parameter)
+            arguments
+                obj Cryotel_TC311
+                parameter {mustBeMember(parameter, ...
+                    ["KP", "KI", "KD", "all"])} = "all"
+                % FIXME: "KP", "KI", "KD" options are only for 
+                %        backward compatibility
             end
-            temp = v;
-        end
-
-        function resp = get_resistance(obj)
-            resp = obj.query("MEASure:RESistance?");
-        end
-
-        function resp = get_target_temperature(obj)
-            obj.flush
-            resp = obj.query("PID:TEMPerature:TARGet?");
-        end
-
-        function resp = get_PID_parameters(obj, parameter)
-            if parameter == 'KP'
-                resp = obj.query("PID:KP?");
-            elseif parameter == 'KI'
-                resp = obj.query("PID:KI?");
-            elseif parameter == 'KD'
-                resp = obj.query("PID:KD?");
+            if parameter == "all"
+                CMD = ['PID:' char(parameter) '?'];
+                value = obj.query_and_scan_one_value(CMD);
             else
-                error("CMD must be 'KP', 'KI' or 'KD'");
+                vP = obj.query_and_scan_one_value('PID:KP?');
+                vI = obj.query_and_scan_one_value('PID:KI?');
+                vD = obj.query_and_scan_one_value('PID:KD?');
+                value = [vP vI vD];
             end
-
         end
 
         function resp = get_heater_mode(obj)
-            CMD = "HEATer:MODE?";
-            resp = obj.query(CMD);
+            resp = obj.query("HEATer:MODE?");
             switch resp
-                case '"OFF"'
-                    disp("The heater is OFF");
-                case '"CC"'
-                    disp("DC is supplied to the heater");
-                case '"PID"'
-                    disp("The heater is in PID control mode");
+                case """OFF"""
+                    resp = "The heater is OFF";
+                case """CC"""
+                    resp = "DC is supplied to the heater";
+                case """PID"""
+                    resp = "The heater is in PID control mode";
                 otherwise
-                    disp("Unknown mode: " + resp);
+                    resp = string(['Unknown mode: <' char(resp) '>']);
             end
+            disp(resp);
         end
 
         function resp = get_sensor(obj)
+            % FIXME: check this
             CMD = 'SENSOR?';
             resp = obj.query(CMD);
         end
 
-        function resp = get_heater_current(obj)
-            CMD = 'HEATer:CURRent:MEASured?';
-            resp = obj.query(CMD); %A
-            disp("Measured heater current is " + resp)
+        function cur = get_heater_current(obj)
+            cur = obj.query_and_scan_one_value("HEATer:CURRent:MEASured?"); % [A]
         end
 
-        function resp = get_target_heater_current(obj)
-            CMD = 'HEATer:CURRent?';
-            resp = obj.query(CMD); %A
-        end        
+        function cur = get_target_heater_current(obj)
+             cur = obj.query_and_scan_one_value("HEATer:CURRent?"); % [A]
+        end
 % -------------------------------------
 
 % NOTE: SET CMD public block ----------

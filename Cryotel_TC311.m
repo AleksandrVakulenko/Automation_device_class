@@ -97,7 +97,7 @@ classdef Cryotel_TC311 < aDevice
                 parameter {mustBeMember(parameter, ...
                     ["KP", "KI", "KD", "all"])} = "all"
                 % FIXME: "KP", "KI", "KD" options are only for 
-                %        backward compatibility
+                % backward compatibility, do not use it
             end
             if parameter == "all"
                 CMD = ['PID:' char(parameter) '?'];
@@ -142,12 +142,12 @@ classdef Cryotel_TC311 < aDevice
 
 % NOTE: SET CMD public block ----------
         function set_target_temperature(obj, trg_temp)
-            CMD = "PID:TEMPerature:TARGet " + num2str(trg_temp);
+            CMD = ['PID:TEMPerature:TARGet ' num2str(trg_temp)];
             obj.send(CMD)
-            disp("Target temperature set on " + obj.get_target_temperature + " K");
         end
         
         function go_to_target_temperature(obj)
+            % FIXME: bad function
             obj.set_heater_mode("PID")
             temperature = round(str2double(obj.get_temperature), 1);
 
@@ -162,48 +162,46 @@ classdef Cryotel_TC311 < aDevice
         
 
         function set_KP(obj, KP)
-            CMD = "PID:KP " + num2str(KP);
+            % FIXME: limits check?
+            CMD = ['PID:KP ' num2str(KP)];
             obj.send(CMD)
-            disp("Target PID KP set on " + KP);
         end
 
         function set_KI(obj, KI)
-            CMD = "PID:KI " + num2str(KI);
+            % FIXME: limits check?
+            CMD = ['PID:KI ' num2str(KI)];
             obj.send(CMD)
-            disp("Target PID KI set on " + KI);
         end
 
         function set_KD(obj, KD)
-           CMD = "PID:KD " + num2str(KD);
-           obj.send(CMD)
-           disp("Target PID KD set on " + KD);
+            % FIXME: limits check?
+            CMD = ['PID:KD ' num2str(KD)];
+            obj.send(CMD)
         end
 
-        function set_heater_mode (obj, mode)
+        function set_KPID(obj, kP, kI, kD)
+            obj.set_KP(kP);
+            obj.set_KP(kI);
+            obj.set_KP(kD);
+        end
+
+        function set_heater_mode(obj, mode)
             arguments
                 obj
-                mode {mustBeMember(mode, ["OFF", "DC", "PID"])}
+                mode {mustBeMember(mode, ["OFF", "DC", "PID", ...
+                    "Const_current", "Feedback"])}
+                % FIXME: options "DC", "PID" are only for 
+                % backward compatibility, do not use it
             end
-            pause_constant = 0.1;
             switch mode
                 case "OFF"
                     CMD = "HEATer:MODE:OFF";
-                    obj.send(CMD);
-                    pause(pause_constant);
-                    obj.get_heater_mode;
-                case "DC"
+                case {"DC", "Const_current"}
                     CMD = "HEATer:MODE:CC";
-                    obj.send(CMD);
-                    pause(pause_constant);
-                    obj.get_heater_mode;               
-                case "PID"
+                case {"PID", "Feedback"}
                     CMD = "HEATer:MODE:PID";
-                    obj.send(CMD);
-                    pause(pause_constant);
-                    obj.get_heater_mode;
-                otherwise
-                    error("Heater mode must be 'OFF' 'DC' or 'PID'")
             end
+            obj.send(CMD);
         end
 
         function set_heater_current(obj, current)
@@ -211,25 +209,21 @@ classdef Cryotel_TC311 < aDevice
             current_max = 1; % A
             if current < current_min
                 current = current_min;
-                 disp("The requested current value is lower " + ...
-                     "than the minumum value acceptable range. " + ...
-                     "The heater current value is set to " + ...
-                    current_min + " A");
+                disp(['The requested current value is lower than the ' ...
+                    'minumum value acceptable range.' newline 'The heater current ' ...
+                    'value is set to ' num2str(current_min) ' [A]']);
             end
 
             if current > current_max
                 current = current_max;
-                 disp("The requested current value is greater " + ...
-                     "than the maximum value acceptable range. " + ...
-                     "The heater current value is set to " + ...
-                    current_max + " A");
+                 disp(['The requested current value is greater ' ...
+                     'than the maximum value acceptable range. ' newline ...
+                     'The heater current value is set to ' ...
+                    num2str(current_max) ' A']);
             end
 
-            pause_constant = 0.1;
             CMD = ['HEATer:CURRent ' num2str(current)];
             obj.send(CMD);
-            pause(pause_constant);
-            obj.get_heater_current; 
         end
 % -------------------------------------
 

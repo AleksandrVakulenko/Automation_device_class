@@ -147,17 +147,8 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
         end
         
         function go_to_target_temperature(obj)
-            % FIXME: bad function
-            obj.set_heater_mode("PID")
-            temperature = round(str2double(obj.get_temperature), 1);
-
-            while temperature ~= str2double(obj.get_target_temperature)
-                temperature = round(str2double(obj.get_temperature), 1);
-                disp(temperature);
-                obj.get_heater_mode;
-                pause(0.5)
-            end
-            obj.set_heater_mode("OFF")
+            % FIXME: bad function. Delete in future release.
+            warinig('The function is marked for removal. Do not use it in your code.');
         end
         
 

@@ -11,13 +11,13 @@
 % ------------
 
 % TODO:
-% 1) 
-% 2) 
-% 3) 
+% 1) Add temp_controller_traits
+% 2) Add inheritance from temp_controller_traits
+% 3) Add hardware description
 % 4)
 
 
-classdef Cryotel_TC311 < aDevice
+classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
     properties
         % FIXME: empty
     end

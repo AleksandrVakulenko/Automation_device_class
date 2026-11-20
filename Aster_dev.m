@@ -684,7 +684,7 @@ classdef Aster_dev < aDevice & ...
             Time = double(Full_time_stamp)*50e-6; % s % FIXME: magic constant
             Voltage1 = ADC_1_voltage; % [V]
             Voltage2 = ADC_2_voltage; % [V]
-            % Device_state_byte = Device_state_byte;
+            Device_state_byte = Device_state_byte;
         end
 
     end

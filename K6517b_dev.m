@@ -104,7 +104,7 @@ classdef K6517b_dev < aDevice & adev_traits.I2V_converter_traits
                 func = "CURRent";
             end
 
-            CMD = sprintf(":SENSe:%s:RANGe %d", func, Level);
+            CMD = sprintf(":SENSe:%s:RANGe %f", func, Level);
             obj.send_and_log(CMD);
 
 

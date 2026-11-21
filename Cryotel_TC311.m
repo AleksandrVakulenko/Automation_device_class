@@ -148,7 +148,7 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
         
         function go_to_target_temperature(obj)
             % FIXME: bad function. Delete in future release.
-            warinig('The function is marked for removal. Do not use it in your code.');
+            warning('The function is marked for removal. Do not use it in your code.');
         end
         
 

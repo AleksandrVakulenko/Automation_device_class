@@ -56,7 +56,7 @@ classdef SR844_dev < aDevice
                 ch_num {mustBeMember(ch_num, [1, 2])}
                 value {mustBeInRange(value, -10, 10)}
             end
-            CMD = sprintf("AUXV %d, %d", ch_num-1, value);
+            CMD = sprintf("AUXV %d, %.4f", ch_num-1, value);
             obj.send_and_log(CMD);    
         end
         
@@ -107,7 +107,7 @@ classdef SR844_dev < aDevice
                 phase_deg (1, 1) double {mustBeNumeric(phase_deg), ...
                     mustBeInRange(phase_deg, -360e3, 360e3, "inclusive")}
             end
-            CMD = sprintf("PHAS %0.7d DEG", phase_deg);
+            CMD = sprintf("PHAS %0.7f DEG", phase_deg);
             obj.send_and_log(CMD);
         end
 

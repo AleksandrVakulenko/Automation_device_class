@@ -92,21 +92,28 @@ classdef SR860_dev < aDevice
 
         function [X, Y] = data_get_XY(obj)
             CMD = "SNAP? 0, 1";
-            try
-                resp = obj.query_and_log(CMD);
-            catch err
-                disp('1: no resp');
-                rethrow(err);
-            end
-            if isempty(resp)
-                %disp('RECURSION RECURSION RECURSION RECURSION RECURSION RECURSION')
-                [X, Y] = obj.data_get_XY();
-                return;
+            for i = 1:5 % NOTE: try 5 times
+                try
+                    resp = obj.query_and_log(CMD);
+                catch err
+                    disp('SR860: E401: no resp');
+                    rethrow(err);
+                end
+                if ~isempty(resp)
+                    break;
+                else
+                    pause(0.1) % FIXME: magic constant
+                end
             end
 
-            data = sscanf(resp, "%f, %f");
-            X = data(1);
-            Y = data(2);
+            if ~isempty(resp)
+                data = sscanf(resp, "%f, %f");
+                X = data(1);
+                Y = data(2);
+            else
+                X = NaN;
+                Y = NaN;
+            end
         end
 
         function [R, Th] = data_get_R_and_Phase(obj)

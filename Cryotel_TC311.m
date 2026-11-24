@@ -250,6 +250,12 @@ end
 function CMD = clean_cmd(CMD)
 
 CMD = uint8(char(CMD));
+
+if isempty(CMD)
+    CMD = '';
+    return;
+end
+
 if CMD(end) == uint8(10) || CMD(end) == uint8(13)
     CMD(end) = [];
 end

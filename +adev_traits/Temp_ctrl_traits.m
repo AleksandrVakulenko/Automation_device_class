@@ -1,5 +1,26 @@
+% Date: 2026.11.25
+% Author: Aleksandr Vakulenko
+% Licensed after GNU GPL v3
+%
+% ----INFO----:
+% <Traits class: common interface for temperature controllers>
+% Type: abstract, not a standalone device class
+% 
+% Description: Public wrappers (setpoint, ramp target/rate, actual
+% temperature, heater active state) with K/C unit conversion and input
+% validation. Hardware-specific part is implemented via protected
+% abstract *_override methods.
+% 
+% Usage: classdef My_controller < aDevice & adev_traits.Temp_ctrl_traits
+%   and implement all *_override methods, otherwise class stays abstract.
+%
+% ------------
 
-% NOTE: template for temperature controller traits
+% TODO:
+% 1) Consider initiate/terminate for consistency with other traits
+% 2) Clarify set_active semantics (+ paired get_active?)
+
+
 
 classdef Temp_ctrl_traits < handle
 
@@ -61,11 +82,11 @@ classdef Temp_ctrl_traits < handle
             ramp_target = temp_unit_conv(ramp_target_kelvin, unit);
         end
 
-        function setpoint = get_ramp_rate(obj)
+        function ramp_rate = get_ramp_rate(obj)
             arguments
                 obj adev_traits.Temp_ctrl_traits
             end
-            setpoint = obj.get_ramp_rate_override();
+            ramp_rate = obj.get_ramp_rate_override();
         end
 
         function temp_array = get_actual_temp(obj)

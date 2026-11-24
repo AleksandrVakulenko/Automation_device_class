@@ -11,8 +11,8 @@
 % ------------
 
 % TODO:
-% 1) Add temp_controller_traits
-% 2) Add inheritance from temp_controller_traits
+% 1) Update override function drafts
+% 2) 
 % 3) Add hardware description
 % 4)
 

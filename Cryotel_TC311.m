@@ -113,13 +113,13 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
                 % backward compatibility, do not use it
             end
             if parameter == "all"
-                CMD = ['PID:' char(parameter) '?'];
-                value = obj.query_and_scan_one_value(CMD);
-            else
                 vP = obj.query_and_scan_one_value('PID:KP?');
                 vI = obj.query_and_scan_one_value('PID:KI?');
                 vD = obj.query_and_scan_one_value('PID:KD?');
                 value = [vP vI vD];
+            else
+                CMD = ['PID:' char(parameter) '?'];
+                value = obj.query_and_scan_one_value(CMD);
             end
         end
 

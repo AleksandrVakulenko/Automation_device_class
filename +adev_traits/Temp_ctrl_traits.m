@@ -35,7 +35,7 @@ classdef Temp_ctrl_traits < handle
                 setpoint (1,1) double
                 unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
-            setpoint_kelvin = temp_unit_conv(setpoint, unit);
+            setpoint_kelvin = temp_conv_to_kelvin(setpoint, unit);
             abs_temp_check(setpoint_kelvin);
             obj.set_setpoint_override(setpoint_kelvin);
         end
@@ -46,7 +46,7 @@ classdef Temp_ctrl_traits < handle
                 ramp_target (1,1) double
                 unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
-            ramp_target_kelvin = temp_unit_conv(ramp_target, unit);
+            ramp_target_kelvin = temp_conv_to_kelvin(ramp_target, unit);
             abs_temp_check(ramp_target_kelvin);
             obj.set_ramp_target_override(ramp_target_kelvin);
         end
@@ -58,28 +58,26 @@ classdef Temp_ctrl_traits < handle
                 unit {mustBeMember(unit, ["K/min"])} = "K/min"
             end
             % FIXME: unit unused
-            if ramp_rate <= 0
+            if isnan(ramp_rate) || ramp_rate <= 0
                 error("Ramp rate must be greater than zero")
             end
             obj.set_ramp_rate_override(ramp_rate);
         end
 
-        function setpoint = get_setpoint(obj, unit)
+        function setpoint = get_setpoint(obj)
             arguments
                 obj adev_traits.Temp_ctrl_traits
-                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
             setpoint_kelvin = obj.get_setpoint_kelvin_override();
-            setpoint = temp_unit_conv(setpoint_kelvin, unit);
+            setpoint = setpoint_kelvin;
         end
 
-        function ramp_target = get_ramp_target(obj, unit)
+        function ramp_target = get_ramp_target(obj)
             arguments
                 obj adev_traits.Temp_ctrl_traits
-                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
             ramp_target_kelvin = obj.get_ramp_target_kelvin_override();
-            ramp_target = temp_unit_conv(ramp_target_kelvin, unit);
+            ramp_target = ramp_target_kelvin;
         end
 
         function ramp_rate = get_ramp_rate(obj)
@@ -135,7 +133,7 @@ end
 end
 
 
-function temp_K = temp_unit_conv(temp, unit)
+function temp_K = temp_conv_to_kelvin(temp, unit)
 arguments
     temp (1,1) double
     unit {mustBeMember(unit, ["K", "C"])} = "K"

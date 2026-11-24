@@ -233,6 +233,65 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
 
     end % methods
 
+    
+    methods (Access = protected)
+
+        function set_setpoint_override(obj, setpoint_kelvin)
+            arguments
+                obj Cryotel_TC311
+                setpoint_kelvin (1,1) double
+            end
+            warning('Unfinished function draft');
+        end
+
+        function set_ramp_target_override(obj, ramp_target_kelvin)
+            arguments
+                obj Cryotel_TC311
+                ramp_target_kelvin (1,1) double
+            end
+            warning('Unfinished function draft');
+        end
+
+        function set_ramp_rate_override(obj, ramp_rate)
+            arguments
+                obj Cryotel_TC311
+                ramp_rate (1,1) double
+            end
+            warning('Unfinished function draft');
+        end
+
+        function get_setpoint_override(obj)
+            arguments
+                obj Cryotel_TC311
+            end
+            warning('Unfinished function draft');
+        end
+
+        function get_ramp_target_override(obj)
+            arguments
+                obj Cryotel_TC311
+            end
+            warning('Unfinished function draft');
+        end
+
+        function get_ramp_rate_override(obj)
+            arguments
+                obj Cryotel_TC311
+            end
+            warning('Unfinished function draft');
+        end
+
+        function set_active_override(obj, status)
+            arguments
+                obj Cryotel_TC311
+                status (1,1) logical
+            end
+            warning('Unfinished function draft');
+        end
+
+    end
+
+
 end % classdef
 
 

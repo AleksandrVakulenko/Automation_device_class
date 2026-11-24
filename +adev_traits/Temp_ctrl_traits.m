@@ -7,12 +7,12 @@ classdef Temp_ctrl_traits < handle
 
     end
 
-    methods
+    methods (Access = public)
         function set_setpoint(obj, setpoint, unit)
             arguments
                 obj adev_traits.Temp_ctrl_traits
                 setpoint (1,1) double
-                unit {mustbemember(unit, ["K", "C"])} = "K"
+                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
             setpoint_kelvin = temp_unit_conv(setpoint, unit);
             abs_temp_check(setpoint_kelvin);
@@ -23,7 +23,7 @@ classdef Temp_ctrl_traits < handle
             arguments
                 obj adev_traits.Temp_ctrl_traits
                 ramp_target (1,1) double
-                unit {mustbemember(unit, ["K", "C"])} = "K"
+                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
             ramp_target_kelvin = temp_unit_conv(ramp_target, unit);
             abs_temp_check(ramp_target_kelvin);
@@ -34,27 +34,31 @@ classdef Temp_ctrl_traits < handle
             arguments
                 obj adev_traits.Temp_ctrl_traits
                 ramp_rate (1,1) double
-                unit {mustbemember(unit, ["K/min"])} = "K/min"
+                unit {mustBeMember(unit, ["K/min"])} = "K/min"
             end
             % FIXME: unit unused
             if ramp_rate <= 0
-                error("Ramp rate must be graeter than zero")
+                error("Ramp rate must be greater than zero")
             end
             obj.set_ramp_rate_override(ramp_rate);
         end
 
-        function setpoint = get_setpoint(obj)
+        function setpoint = get_setpoint(obj, unit)
             arguments
                 obj adev_traits.Temp_ctrl_traits
+                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
-            setpoint = obj.get_setpoint_override();
+            setpoint_kelvin = obj.get_setpoint_kelvin_override();
+            setpoint = temp_unit_conv(setpoint_kelvin, unit);
         end
 
-        function setpoint = get_ramp_target(obj)
+        function ramp_target = get_ramp_target(obj, unit)
             arguments
                 obj adev_traits.Temp_ctrl_traits
+                unit {mustBeMember(unit, ["K", "C"])} = "K"
             end
-            setpoint = obj.get_ramp_target_override();
+            ramp_target_kelvin = obj.get_ramp_target_kelvin_override();
+            ramp_target = temp_unit_conv(ramp_target_kelvin, unit);
         end
 
         function setpoint = get_ramp_rate(obj)
@@ -62,6 +66,13 @@ classdef Temp_ctrl_traits < handle
                 obj adev_traits.Temp_ctrl_traits
             end
             setpoint = obj.get_ramp_rate_override();
+        end
+
+        function temp_array = get_actual_temp(obj)
+            arguments
+                obj adev_traits.Temp_ctrl_traits
+            end
+            temp_array = obj.get_actual_temp_override();
         end
 
         function set_active(obj, status)
@@ -79,9 +90,11 @@ classdef Temp_ctrl_traits < handle
         set_ramp_target_override(obj, ramp_target_kelvin);
         set_ramp_rate_override(obj, ramp_rate);
 
-        get_setpoint_override(obj);
-        get_ramp_target_override(obj);
-        get_ramp_rate_override(obj);
+        setpoint = get_setpoint_kelvin_override(obj);
+        ramp_target = get_ramp_target_kelvin_override(obj);
+        ramp_rate = get_ramp_rate_override(obj);
+
+        temp_array = get_actual_temp_override(obj);
 
         set_active_override(obj, status);
     end
@@ -104,8 +117,11 @@ end
 function temp_K = temp_unit_conv(temp, unit)
 arguments
     temp (1,1) double
-    unit {mustbemember(unit, ["K", "C"])} = "K"
+    unit {mustBeMember(unit, ["K", "C"])} = "K"
 end
+    if isnan(temp)
+        error('Temp value could not be NaN');
+    end
     if unit == "C"
         temp_K = temp + 273.15;
     else

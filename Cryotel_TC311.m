@@ -260,25 +260,36 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
             warning('Unfinished function draft');
         end
 
-        function get_setpoint_override(obj)
+        function setpoint = get_setpoint_kelvin_override(obj)
             arguments
                 obj Cryotel_TC311
             end
             warning('Unfinished function draft');
+            setpoint = NaN; % [K]
         end
 
-        function get_ramp_target_override(obj)
+        function ramp_target = get_ramp_target_kelvin_override(obj)
             arguments
                 obj Cryotel_TC311
             end
             warning('Unfinished function draft');
+            ramp_target = NaN; % [K]
         end
 
-        function get_ramp_rate_override(obj)
+        function ramp_rate = get_ramp_rate_override(obj)
             arguments
                 obj Cryotel_TC311
             end
             warning('Unfinished function draft');
+            ramp_rate = NaN;
+        end
+
+        function temp_array = get_actual_temp_override(obj)
+            arguments
+                obj Cryotel_TC311
+            end
+            warning('Unfinished function draft');
+            temp_array = NaN;
         end
 
         function set_active_override(obj, status)
@@ -302,6 +313,7 @@ if numel(CMD) == 0
     error("CryoTel:EmptyCommand", "CMD couldn't be empty");
 end
 CMD = [uint8(CMD) uint8(10)];
+CMD = char(CMD);
 end
 
 

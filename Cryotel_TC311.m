@@ -38,26 +38,39 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
 
 % NOTE: low level interaction
         function flush(obj)
+            arguments
+                obj Cryotel_TC311
+            end
             % FIXME: remove from public methods
             obj.flush_con(); % method from aDevice
         end
 
         function resp = read(obj)
+            arguments
+                obj Cryotel_TC311
+            end
             % FIXME: remove from public methods
             resp = obj.read_and_log(); % method from aDevice
         end
 
         function send(obj, CMD)
-            % FIXME: remove from public methods
-            if strlength(string(CMD)) == 0
-                error("CryoTel:EmptyCommand", "CMD couldn't be empty");
+            arguments
+                obj Cryotel_TC311
+                CMD (1, 1) string
             end
-            obj.send_and_log(CMD); % method from aDevice
+            % FIXME: remove from public methods
+            CMD = cmd_out_format(CMD);
+            obj.send_and_log(CMD);
         end
 
         function resp = query(obj, CMD)
+            arguments
+                obj Cryotel_TC311
+                CMD (1, 1) string
+            end
             % FIXME: remove from public methods
-            resp = obj.query_and_log(CMD); % method from aDevice
+            CMD = cmd_out_format(CMD);
+            resp = obj.query_and_log(CMD, "long");
         end
 
         function value = query_and_scan_one_value(obj, CMD)
@@ -224,6 +237,27 @@ end % classdef
 
 
 
+function CMD = cmd_out_format(CMD)
+CMD = clean_cmd(CMD);
+if numel(CMD) == 0
+    error("CryoTel:EmptyCommand", "CMD couldn't be empty");
+end
+CMD = [uint8(CMD) uint8(10)];
+end
 
 
+% FIXME: place somewhere else
+function CMD = clean_cmd(CMD)
+
+CMD = uint8(char(CMD));
+if CMD(end) == uint8(10) || CMD(end) == uint8(13)
+    CMD(end) = [];
+end
+if CMD(end) == uint8(10) || CMD(end) == uint8(13)
+    CMD(end) = [];
+end
+
+CMD = char(CMD);
+
+end
 

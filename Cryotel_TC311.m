@@ -241,55 +241,58 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
                 obj Cryotel_TC311
                 setpoint_kelvin (1,1) double
             end
-            warning('Unfinished function draft');
+            obj.set_target_temperature(setpoint_kelvin);
         end
 
+        % NOTE: this function is unavailable
         function set_ramp_target_override(obj, ramp_target_kelvin)
             arguments
                 obj Cryotel_TC311
                 ramp_target_kelvin (1,1) double
             end
-            warning('Unfinished function draft');
+            error("aDevice:Override:unable", "TC311 does not handle ramp mode");
         end
 
+        % NOTE: this function is unavailable
         function set_ramp_rate_override(obj, ramp_rate)
             arguments
                 obj Cryotel_TC311
                 ramp_rate (1,1) double
             end
-            warning('Unfinished function draft');
+            error("aDevice:Override:unable", "TC311 does not handle ramp mode");
         end
 
         function setpoint = get_setpoint_kelvin_override(obj)
             arguments
                 obj Cryotel_TC311
             end
-            warning('Unfinished function draft');
-            setpoint = NaN; % [K]
+            setpoint = obj.get_target_temperature(); % [K]
         end
 
+        % NOTE: this function is unavailable
         function ramp_target = get_ramp_target_kelvin_override(obj)
             arguments
                 obj Cryotel_TC311
             end
-            warning('Unfinished function draft');
             ramp_target = NaN; % [K]
+            error("aDevice:Override:unable", "TC311 does not handle ramp mode");
         end
 
+        % NOTE: this function is unavailable
         function ramp_rate = get_ramp_rate_override(obj)
             arguments
                 obj Cryotel_TC311
             end
-            warning('Unfinished function draft');
             ramp_rate = NaN;
+            error("aDevice:Override:unable", "TC311 does not handle ramp mode");
         end
 
-        function temp_array = get_actual_temp_override(obj)
+        function Temp = get_actual_temp_override(obj)
             arguments
                 obj Cryotel_TC311
             end
-            warning('Unfinished function draft');
-            temp_array = NaN;
+            temp_array = obj.get_temperature();
+            Temp = temp_array(1);
         end
 
         function set_active_override(obj, status)
@@ -297,7 +300,11 @@ classdef Cryotel_TC311 < aDevice & adev_traits.Temp_ctrl_traits
                 obj Cryotel_TC311
                 status (1,1) logical
             end
-            warning('Unfinished function draft');
+            if status
+                obj.set_heater_mode("Feedback");
+            else
+                obj.set_heater_mode("OFF");
+            end
         end
 
     end
